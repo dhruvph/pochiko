@@ -5,8 +5,16 @@
 (() => {
   const canvas = document.getElementById('pond-canvas');
   if (!canvas) return;
-  const gl = canvas.getContext('webgl', { alpha: true, antialias: false });
-  if (!gl) return;
+
+  let gl;
+  try {
+    gl = canvas.getContext('webgl', { alpha: true, antialias: false });
+  } catch(e) { /* WebGL not available */ }
+  if (!gl) {
+    // Fallback: CSS-only subtle shimmer
+    canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;background:linear-gradient(180deg,transparent 60%,rgba(59,130,246,0.04) 100%);';
+    return;
+  }
 
   // Vertex shader — full screen quad
   const vertSrc = `
@@ -93,37 +101,54 @@
   `;
 
   function createShader(type, src) {
-    const s = gl.createShader(type);
-    gl.shaderSource(s, src);
-    gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-      console.error(gl.getShaderInfoLog(s));
-      return null;
-    }
-    return s;
+    try {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+        console.warn('Shader error:', gl.getShaderInfoLog(s));
+        return null;
+      }
+      return s;
+    } catch(e) { return null; }
   }
 
   const vs = createShader(gl.VERTEX_SHADER, vertSrc);
   const fs = createShader(gl.FRAGMENT_SHADER, fragSrc);
-  if (!vs || !fs) return;
+  if (!vs || !fs) {
+    // Shader compilation failed, use fallback
+    canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;background:linear-gradient(180deg,transparent 60%,rgba(59,130,246,0.04) 100%);';
+    return;
+  }
 
-  const prog = gl.createProgram();
-  gl.attachShader(prog, vs);
-  gl.attachShader(prog, fs);
-  gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-    console.error(gl.getProgramInfoLog(prog));
+  let prog;
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      console.warn('Program link error:', gl.getProgramInfoLog(prog));
+      return;
+    }
+  } catch(e) {
+    canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;background:linear-gradient(180deg,transparent 60%,rgba(59,130,246,0.04) 100%);';
     return;
   }
 
   // Full-screen quad
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
-  const aLoc = gl.getAttribLocation(prog, 'a');
-  gl.enableVertexAttribArray(aLoc);
-  gl.vertexAttribPointer(aLoc, 2, gl.FLOAT, false, 0, 0);
-  gl.useProgram(prog);
+  try {
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    const aLoc = gl.getAttribLocation(prog, 'a');
+    gl.enableVertexAttribArray(aLoc);
+    gl.vertexAttribPointer(aLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.useProgram(prog);
+  } catch(e) {
+    canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;background:linear-gradient(180deg,transparent 60%,rgba(59,130,246,0.04) 100%);';
+    return;
+  }
 
   const uSize = gl.getUniformLocation(prog, 'u_size');
   const uTime = gl.getUniformLocation(prog, 'u_time');
@@ -184,8 +209,8 @@
     dispVel += (vel - dispVel) * smooth;
     vel *= Math.exp(-dt / 0.14);
 
-    // Throttle to ~30fps for performance
-    if (now - lastFrame >= 30) {
+    // Render frame
+    try {
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform2f(uSize, canvas.width, canvas.height);
       gl.uniform1f(uTime, (now - startTime) / 1000);
@@ -193,7 +218,7 @@
       gl.uniform1f(uVelocity, Math.min(dispVel / 40, 1));
       gl.uniform1f(uTheme, getTheme());
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-    }
+    } catch(e) { /* swallow render errors */ }
 
     if (!reducedMotion) rafId = requestAnimationFrame(frame);
   }
