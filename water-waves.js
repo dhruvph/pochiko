@@ -11,10 +11,10 @@
 
   // Each wave is a thin sinusoidal line of dots
   const waveLines = [
-    { yFrac: 0.50, amp: 6,  speed: 25, wl: 30, spacing: 3, opacity: 0.10, color: 0 },
-    { yFrac: 0.62, amp: 8,  speed: 18, wl: 24, spacing: 3, opacity: 0.08, color: 1 },
-    { yFrac: 0.74, amp: 5,  speed: 30, wl: 35, spacing: 4, opacity: 0.07, color: 0 },
-    { yFrac: 0.85, amp: 7,  speed: 22, wl: 20, spacing: 3, opacity: 0.09, color: 2 },
+    { yFrac: 0.50, amp: 6,  speed: 25, wl: 30, spacing: 3, opacity: 0.18, color: 0 },
+    { yFrac: 0.62, amp: 8,  speed: 18, wl: 24, spacing: 3, opacity: 0.14, color: 1 },
+    { yFrac: 0.74, amp: 5,  speed: 30, wl: 35, spacing: 4, opacity: 0.12, color: 0 },
+    { yFrac: 0.85, amp: 7,  speed: 22, wl: 20, spacing: 3, opacity: 0.16, color: 2 },
   ];
 
   const frag = document.createDocumentFragment();
