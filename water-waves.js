@@ -1,46 +1,79 @@
-// ===== WAVE LINES — flowing sinusoidal dot trails =====
-// A few thin wave lines made of small dots, drifting horizontally.
-// Think: gentle ripples on a still pond.
+// ===== POND WATER — CSS Pixel Wave Background =====
+// Creates animated pixel blocks that pulse like water surface
+// Cursor interaction via CSS custom properties
 
 (() => {
   const bg = document.getElementById('water-bg');
   if (!bg) return;
 
-  const PX = 8;
-  const COLS = Math.ceil(window.innerWidth / PX);
+  const PX_SIZE = 10;
+  const COLS = Math.ceil(window.innerWidth / PX_SIZE);
+  const ROWS = Math.ceil(window.innerHeight / PX_SIZE);
+  const DENSITY = 0.15; // 15% of cells active
 
-  // Each wave is a thin sinusoidal line of dots
-  const waveLines = [
-    { yFrac: 0.50, amp: 6,  speed: 25, wl: 30, spacing: 3, opacity: 0.18, color: 0 },
-    { yFrac: 0.62, amp: 8,  speed: 18, wl: 24, spacing: 3, opacity: 0.14, color: 1 },
-    { yFrac: 0.74, amp: 5,  speed: 30, wl: 35, spacing: 4, opacity: 0.12, color: 0 },
-    { yFrac: 0.85, amp: 7,  speed: 22, wl: 20, spacing: 3, opacity: 0.16, color: 2 },
-  ];
+  // Pseudo-random based on position
+  function hash(x, y) {
+    let h = (x * 374761393 + y * 668265263) | 0;
+    h = (h ^ (h >> 13)) * 1274126177;
+    return ((h ^ (h >> 16)) & 0xffff) / 0xffff;
+  }
 
+  // Create pixel grid
   const frag = document.createDocumentFragment();
-
-  waveLines.forEach((w) => {
-    const band = document.createElement('div');
-    band.className = 'wave-band';
-    band.style.animationDuration = w.speed + 's';
-
-    const yBase = Math.round(w.yFrac * window.innerHeight / PX);
-
-    for (let x = 0; x < COLS; x += w.spacing) {
-      const yOff = Math.round(w.amp * Math.sin(x / w.wl * Math.PI * 2));
-      const y = yBase + yOff;
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      const r = hash(x, y);
+      if (r > DENSITY) continue;
 
       const px = document.createElement('div');
-      px.className = 'wave-px';
-      px.dataset.color = w.color;
-      px.style.left = (x * PX) + 'px';
-      px.style.top = (y * PX) + 'px';
-      px.style.opacity = w.opacity;
-      band.appendChild(px);
-    }
+      px.className = 'pond-px';
 
-    frag.appendChild(band);
-  });
+      // Position
+      px.style.left = (x * PX_SIZE) + 'px';
+      px.style.top = (y * PX_SIZE) + 'px';
+
+      // Wave animation timing (diagonal drift)
+      const wave = Math.sin(x * 0.15 + y * 0.2);
+      const delay = wave * 3 + hash(x * 7, y * 13) * 4;
+      const duration = 4 + hash(x * 3, y * 7) * 3;
+      px.style.animationDelay = delay + 's';
+      px.style.animationDuration = duration + 's';
+
+      // Color variation
+      const colorIdx = Math.floor(r * 4);
+      px.dataset.color = colorIdx;
+
+      // Denser at bottom
+      const bottomBias = y / ROWS;
+      if (hash(x * 17, y * 23) < bottomBias * 0.3) {
+        px.style.opacity = '0.6';
+      }
+
+      frag.appendChild(px);
+    }
+  }
 
   bg.appendChild(frag);
+
+  // Cursor tracking — glow near mouse
+  let mouseX = -1000, mouseY = -1000;
+  const cursorGlow = document.createElement('div');
+  cursorGlow.className = 'pond-cursor-glow';
+  bg.appendChild(cursorGlow);
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursorGlow.style.left = mouseX + 'px';
+    cursorGlow.style.top = mouseY + 'px';
+  }, { passive: true });
+
+  // Track velocity for glow intensity
+  let lastX = 0, lastY = 0, velocity = 0;
+  document.addEventListener('mousemove', (e) => {
+    velocity = Math.hypot(e.clientX - lastX, e.clientY - lastY);
+    lastX = e.clientX;
+    lastY = e.clientY;
+    cursorGlow.style.opacity = Math.min(0.3 + velocity * 0.01, 0.6);
+  }, { passive: true });
 })();
