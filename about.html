@@ -7,49 +7,49 @@
   <meta name="theme-color" content="#6366f1">
   <link rel="icon" type="image/svg+xml" href="hippo-logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
   <style>
     /* ===== DESIGN TOKENS ===== */
     :root {
       --s-1: 0.25rem; --s-2: 0.5rem; --s-3: 0.75rem; --s-4: 1rem;
       --s-5: 1.25rem; --s-6: 1.5rem; --s-8: 2rem; --s-10: 2.5rem;
       --s-12: 3rem; --s-16: 4rem; --s-20: 5rem;
-      --font-sans: 'Inter', -apple-system, sans-serif;
+      --font-sans: 'DM Sans', -apple-system, sans-serif;
       --font-serif: 'Lora', Georgia, serif;
       --font-mono: 'JetBrains Mono', monospace;
-      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
       --dur: 0.2s;
     }
 
     /* Dark theme (default) */
     [data-theme="dark"] {
-      --bg: #09090b; --bg-2: #111113; --bg-3: #18181b;
-      --border: #27272a; --border-hover: #3f3f46;
-      --text: #fafafa; --text-dim: #a1a1aa; --text-muted: #71717a;
-      --accent-1: #3b82f6; --accent-2: #8b5cf6; --accent-3: #ec4899; --accent-4: #22c55e;
-      --shadow: rgba(0,0,0,0.4);
-      --focus-ring: rgba(99,102,241,0.5);
+      --bg: #0c0c0f; --bg-2: #131316; --bg-3: #1a1a1f;
+      --border: #2a2a30; --border-hover: #404049;
+      --text: #eaeaef; --text-dim: #a0a0ab; --text-muted: #6e6e7a;
+      --accent-1: #5b7ff5; --accent-2: #9b7af6; --accent-3: #e85daa; --accent-4: #34c77a;
+      --shadow: rgba(0,0,0,0.5);
+      --focus-ring: rgba(91,127,245,0.5);
     }
 
     /* Light theme */
     [data-theme="light"] {
-      --bg: #fafafa; --bg-2: #ffffff; --bg-3: #f4f4f5;
-      --border: #e4e4e7; --border-hover: #d4d4d8;
-      --text: #09090b; --text-dim: #52525b; --text-muted: #a1a1aa;
-      --accent-1: #2563eb; --accent-2: #7c3aed; --accent-3: #db2777; --accent-4: #16a34a;
-      --shadow: rgba(0,0,0,0.08);
-      --focus-ring: rgba(99,102,241,0.4);
+      --bg: #faf9fc; --bg-2: #ffffff; --bg-3: #f4f3f7;
+      --border: #e2e1e8; --border-hover: #ccc9d6;
+      --text: #0f0e17; --text-dim: #52505e; --text-muted: #9e9bab;
+      --accent-1: #3b5bdb; --accent-2: #7c3aed; --accent-3: #db2777; --accent-4: #0f9d58;
+      --shadow: rgba(15,14,23,0.08);
+      --focus-ring: rgba(59,91,219,0.45);
     }
 
     /* System preference */
     @media (prefers-color-scheme: light) {
       :root:not([data-theme="dark"]) {
-        --bg: #fafafa; --bg-2: #ffffff; --bg-3: #f4f4f5;
-        --border: #e4e4e7; --border-hover: #d4d4d8;
-        --text: #09090b; --text-dim: #52525b; --text-muted: #a1a1aa;
-        --accent-1: #2563eb; --accent-2: #7c3aed; --accent-3: #db2777; --accent-4: #16a34a;
-        --shadow: rgba(0,0,0,0.08);
-        --focus-ring: rgba(99,102,241,0.4);
+        --bg: #faf9fc; --bg-2: #ffffff; --bg-3: #f4f3f7;
+        --border: #e2e1e8; --border-hover: #ccc9d6;
+        --text: #0f0e17; --text-dim: #52505e; --text-muted: #9e9bab;
+        --accent-1: #3b5bdb; --accent-2: #7c3aed; --accent-3: #db2777; --accent-4: #0f9d58;
+        --shadow: rgba(15,14,23,0.08);
+        --focus-ring: rgba(59,91,219,0.45);
       }
     }
 
@@ -104,6 +104,14 @@
       background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
     }
     .container { position: relative; z-index: 1; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
 
     a:focus-visible, button:focus-visible {
       outline: 2px solid var(--focus-ring);
