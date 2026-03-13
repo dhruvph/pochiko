@@ -9,7 +9,7 @@
   const PX_SIZE = 10;
   const COLS = Math.ceil(window.innerWidth / PX_SIZE);
   const ROWS = Math.ceil(window.innerHeight / PX_SIZE);
-  const DENSITY = 0.15; // 15% of cells active
+  const DENSITY = 0.22; // 22% of cells active
 
   // Pseudo-random based on position
   function hash(x, y) {
