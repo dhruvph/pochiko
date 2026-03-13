@@ -85,8 +85,7 @@
       transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
     }
 
-    /* Water wave canvas */
-    /* Pond water background — CSS pixel waves */
+    /* Wave bands — horizontal flowing waves */
     #water-bg {
       position: fixed;
       inset: 0;
@@ -95,47 +94,44 @@
       overflow: hidden;
     }
 
-    .pond-px {
+    .wave-band {
       position: absolute;
-      width: 9px; height: 9px;
-      border-radius: 1px;
-      animation: pondPulse ease-in-out infinite;
+      inset: 0;
+      animation: waveFlow linear infinite;
     }
 
-    .pond-px[data-color="0"] { background: rgba(59, 130, 246, 0.55); }
-    .pond-px[data-color="1"] { background: rgba(99, 102, 241, 0.5); }
-    .pond-px[data-color="2"] { background: rgba(139, 92, 246, 0.45); }
-    .pond-px[data-color="3"] { background: rgba(34, 197, 94, 0.35); }
-
-    [data-theme="light"] .pond-px[data-color="0"] { background: rgba(59, 130, 246, 0.3); }
-    [data-theme="light"] .pond-px[data-color="1"] { background: rgba(99, 102, 241, 0.28); }
-    [data-theme="light"] .pond-px[data-color="2"] { background: rgba(139, 92, 246, 0.25); }
-    [data-theme="light"] .pond-px[data-color="3"] { background: rgba(34, 197, 94, 0.2); }
-
-    @keyframes pondPulse {
-      0%, 100% {
-        opacity: 0.25;
-        transform: scale(0.8) translateY(0);
-      }
-      50% {
-        opacity: 0.8;
-        transform: scale(1.05) translateY(-1px);
-      }
+    @keyframes waveFlow {
+      from { transform: translateX(0); }
+      to { transform: translateX(-200px); }
     }
+
+    .wave-px {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+    }
+
+    .wave-px[data-color="0"] { background: rgba(59, 130, 246, 0.7); }
+    .wave-px[data-color="1"] { background: rgba(99, 102, 241, 0.6); }
+    .wave-px[data-color="2"] { background: rgba(139, 92, 246, 0.5); }
+
+    [data-theme="light"] .wave-px[data-color="0"] { background: rgba(59, 130, 246, 0.12); }
+    [data-theme="light"] .wave-px[data-color="1"] { background: rgba(99, 102, 241, 0.10); }
+    [data-theme="light"] .wave-px[data-color="2"] { background: rgba(139, 92, 246, 0.08); }
 
     .pond-cursor-glow {
       position: absolute;
       width: 200px; height: 200px;
       margin-left: -100px; margin-top: -100px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.3s;
     }
 
     [data-theme="light"] .pond-cursor-glow {
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
     }
 
     .container { position: relative; z-index: 1; }
