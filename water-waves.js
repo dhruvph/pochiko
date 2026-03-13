@@ -1,20 +1,28 @@
-// ===== BEACH WAVES — Subtle horizontal pixel waves =====
-// Sparse wave crests flowing along the bottom of the screen.
+// ===== HALFTONE WAVES — density-based wave pattern =====
+// Inspired by halftone printing: uniform dots, varying density.
+// Dense clusters = wave crests, sparse = troughs.
+// All dots animate together for a flowing effect.
 
 (() => {
   const bg = document.getElementById('water-bg');
   if (!bg) return;
 
-  const PX = 12; // slightly larger pixels, fewer of them
+  const PX = 8;
   const COLS = Math.ceil(window.innerWidth / PX);
   const ROWS = Math.ceil(window.innerHeight / PX);
 
-  // Wave bands — only in bottom half of screen
+  // Halftone wave params — each wave is a density field
   const waves = [
-    { yFrac: 0.70, amp: 2,  speed: 20, wl: 16, opacity: 0.05, color: 0 },
-    { yFrac: 0.80, amp: 3,  speed: 14, wl: 22, opacity: 0.06, color: 1 },
-    { yFrac: 0.90, amp: 2,  speed: 25, wl: 12, opacity: 0.04, color: 0 },
+    { yFrac: 0.78, amp: 4,  speed: 18, wl: 20, baseDensity: 0.08, peakDensity: 0.35, color: 0 },
+    { yFrac: 0.86, amp: 3,  speed: 12, wl: 14, baseDensity: 0.06, peakDensity: 0.28, color: 1 },
+    { yFrac: 0.93, amp: 2,  speed: 24, wl: 28, baseDensity: 0.04, peakDensity: 0.20, color: 0 },
   ];
+
+  // Seeded random for deterministic placement
+  function rng(seed) {
+    let s = seed | 0;
+    return () => { s = (s * 1664525 + 1013904223) | 0; return (s >>> 0) / 0xffffffff; };
+  }
 
   const frag = document.createDocumentFragment();
 
@@ -24,22 +32,37 @@
     band.style.animationDuration = w.speed + 's';
 
     const yBase = Math.round(w.yFrac * ROWS);
+    const rand = rng(wi * 7919 + 104729);
 
     for (let x = 0; x < COLS; x++) {
+      // Wave function: 0 at troughs, 1 at crests
+      const waveVal = (Math.sin(x / w.wl * Math.PI * 2) + 1) / 2;
+
+      // Density varies with wave: sparse at troughs, dense at crests
+      const density = w.baseDensity + (w.peakDensity - w.baseDensity) * waveVal;
+
+      // Y position follows the wave
       const yOff = Math.round(w.amp * Math.sin(x / w.wl * Math.PI * 2));
-      const y = yBase + yOff;
-      if (y < 0 || y >= ROWS) continue;
+      const yCenter = yBase + yOff;
 
-      // Very sparse: ~25% of positions
-      if (((x * 37 + y * 53 + wi * 97) % 4) !== 0) continue;
+      // Place dots in a small vertical band around the wave center
+      for (let dy = -2; dy <= 2; dy++) {
+        const y = yCenter + dy;
+        if (y < 0 || y >= ROWS) continue;
 
-      const px = document.createElement('div');
-      px.className = 'wave-px';
-      px.dataset.color = w.color;
-      px.style.left = (x * PX) + 'px';
-      px.style.top = (y * PX) + 'px';
-      px.style.opacity = w.opacity;
-      band.appendChild(px);
+        // Halftone: probability based on distance from center AND wave density
+        const distFactor = 1 - Math.abs(dy) / 3;
+        const prob = density * distFactor;
+
+        if (rand() > prob) continue;
+
+        const px = document.createElement('div');
+        px.className = 'wave-px';
+        px.dataset.color = w.color;
+        px.style.left = (x * PX) + 'px';
+        px.style.top = (y * PX) + 'px';
+        band.appendChild(px);
+      }
     }
 
     frag.appendChild(band);
@@ -47,7 +70,7 @@
 
   bg.appendChild(frag);
 
-  // Very subtle cursor glow
+  // Subtle cursor glow
   const glow = document.createElement('div');
   glow.className = 'pond-cursor-glow';
   bg.appendChild(glow);
