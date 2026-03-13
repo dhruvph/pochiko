@@ -17,88 +17,61 @@
   }
 
   // Vertex shader — full screen quad
-  const vertSrc = `
-    attribute vec2 a;
-    void main() { gl_Position = vec4(a, 0, 1); }
-  `;
+  const vertSrc = 'attribute vec2 a; void main() { gl_Position = vec4(a, 0, 1); }';
 
   // Fragment shader — pixel waves with cursor interaction
-  const fragSrc = `
-    precision mediump float;
-    uniform vec2 u_size;
-    uniform float u_time;
-    uniform vec2 u_cursor;
-    uniform float u_velocity;
-    uniform float u_theme; // 0 = dark, 1 = light
+  const fragSrc = [
+    'precision mediump float;',
+    'uniform vec2 u_size;',
+    'uniform float u_time;',
+    'uniform vec2 u_cursor;',
+    'uniform float u_velocity;',
+    'uniform float u_theme;',
 
-    /* Hash function */
-    float h21(vec2 p) {
-      vec3 q = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
-      q += dot(q, q.yzx + 33.33);
-      return fract((q.x + q.y) * q.z);
-    }
+    'float h21(vec2 p) {',
+    '  vec3 q = fract(vec3(p.xyx) * vec3(.1031,.1030,.0973));',
+    '  q += dot(q, q.yzx + 33.33);',
+    '  return fract((q.x+q.y)*q.z);',
+    '}',
 
-    void main() {
-      float sz = 10.; /* pixel size */
-      vec2 cur = vec2(u_cursor.x * u_size.x, (1. - u_cursor.y) * u_size.y);
-
-      vec2 px = gl_FragCoord.xy;
-      vec2 cell = floor(px / sz);
-      float seed = h21(cell);
-
-      /* cursor repulsion */
-      vec2 cellMid = (cell + .5) * sz;
-      vec2 away = cellMid - cur;
-      float dist = length(away);
-      float repel = 1. / (1. + dist * .004);
-      px += normalize(away + .01) * repel * (8. + u_velocity * 5.);
-
-      cell = floor(px / sz);
-      cellMid = (cell + .5) * sz;
-      seed = h21(cell);
-
-      /* sparse: ~15% of cells carry a pixel */
-      float active = step(.85, seed);
-
-      /* wave bands — diagonal drift like water surface */
-      float phase = dot(cellMid / u_size, vec2(1.8, 2.2)) - u_time * 0.04 + seed * 6.28;
-      float wave = sin(phase) * .5 + .5;
-      float band = smoothstep(.35, .55, wave) * smoothstep(.95, .65, wave);
-
-      /* density: denser at bottom (like water pooling) */
-      float yN = gl_FragCoord.y / u_size.y;
-      float base = band * active * (.06 + smoothstep(.4, .0, yN) * .08);
-
-      /* cursor glow */
-      float cd = length(cellMid - cur) / u_size.x;
-      float glow = exp(-cd * cd * 40.) * (1. + u_velocity * .5);
-      float vis = base + glow * (.12 + u_velocity * .06) * (active + .3);
-
-      /* colors — blue/indigo/teal for dark, soft blue for light */
-      vec3 ink;
-      if (u_theme < .5) {
-        /* dark: pond at night */
-        ink = vec3(.23, .45, .75) + glow * vec3(.08, .12, .18);
-      } else {
-        /* light: morning pond */
-        ink = vec3(.35, .50, .70) + glow * vec3(.05, .08, .12);
-      }
-
-      /* subtle color variation per pixel */
-      ink += (seed - .5) * .08;
-
-      /* vignette */
-      vec2 sc = gl_FragCoord.xy / u_size - .5;
-      float vig = 1. - .4 * dot(sc, sc);
-      vis *= vig;
-
-      /* film grain */
-      float n = h21(gl_FragCoord.xy + fract(u_time * 13.7)) - .5;
-      vec3 col = ink * vis + n * .025;
-
-      gl_FragColor = vec4(col, vis * .7);
-    }
-  `;
+    'void main() {',
+    '  float sz = 10.;',
+    '  vec2 cur = vec2(u_cursor.x*u_size.x, (1.-u_cursor.y)*u_size.y);',
+    '  vec2 px = gl_FragCoord.xy;',
+    '  vec2 cell = floor(px/sz);',
+    '  float seed = h21(cell);',
+    '  vec2 cellMid = (cell+.5)*sz;',
+    '  vec2 away = cellMid-cur;',
+    '  float dist = length(away);',
+    '  float repel = 1./(1.+dist*.004);',
+    '  px += normalize(away+.01)*repel*(8.+u_velocity*5.);',
+    '  cell = floor(px/sz);',
+    '  cellMid = (cell+.5)*sz;',
+    '  seed = h21(cell);',
+    '  float active = step(.85, seed);',
+    '  float phase = dot(cellMid/u_size, vec2(1.8,2.2))-u_time*0.04+seed*6.28;',
+    '  float wave = sin(phase)*.5+.5;',
+    '  float band = smoothstep(.35,.55,wave)*smoothstep(.95,.65,wave);',
+    '  float yN = gl_FragCoord.y/u_size.y;',
+    '  float base = band*active*(.06+smoothstep(.4,.0,yN)*.08);',
+    '  float cd = length(cellMid-cur)/u_size.x;',
+    '  float glow = exp(-cd*cd*40.)*(1.+u_velocity*.5);',
+    '  float vis = base+glow*(.12+u_velocity*.06)*(active+.3);',
+    '  vec3 ink;',
+    '  if(u_theme<.5) {',
+    '    ink = vec3(.23,.45,.75)+glow*vec3(.08,.12,.18);',
+    '  } else {',
+    '    ink = vec3(.35,.50,.70)+glow*vec3(.05,.08,.12);',
+    '  }',
+    '  ink += (seed-.5)*.08;',
+    '  vec2 sc = gl_FragCoord.xy/u_size-.5;',
+    '  float vig = 1.-.4*dot(sc,sc);',
+    '  vis *= vig;',
+    '  float n = h21(gl_FragCoord.xy+fract(u_time*13.7))-.5;',
+    '  vec3 col = ink*vis+n*.025;',
+    '  gl_FragColor = vec4(col, vis*.7);',
+    '}'
+  ].join('\n');
 
   function createShader(type, src) {
     try {
