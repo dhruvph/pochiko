@@ -86,76 +86,13 @@
     }
 
     /* Water wave canvas */
-    #water-bg {
+    /* WebGL pond canvas — see water-waves.js */
+    #pond-canvas {
       position: fixed;
-      bottom: 0; left: 0;
-      width: 100%; height: 100%;
+      inset: 0;
       pointer-events: none;
       z-index: 0;
-      overflow: hidden;
     }
-
-    /* Flowing SVG waves */
-    .wave-svg {
-      position: absolute;
-      bottom: 0; left: 0;
-      width: 200%;
-    }
-    .wave-svg.w1 { animation: waveFlow 12s linear infinite; opacity: 0.08; }
-    .wave-svg.w2 { animation: waveFlow 18s linear infinite reverse; opacity: 0.06; bottom: 8px; }
-    .wave-svg.w3 { animation: waveFlow 15s linear infinite; opacity: 0.05; bottom: 16px; }
-
-    [data-theme="dark"] .wave-svg.w1 { opacity: 0.1; }
-    [data-theme="dark"] .wave-svg.w2 { opacity: 0.08; }
-    [data-theme="dark"] .wave-svg.w3 { opacity: 0.06; }
-
-    @keyframes waveFlow {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
-    /* Ripple rings */
-    .ripple {
-      position: absolute;
-      border-radius: 50%;
-      border: 1px solid rgba(59, 130, 246, 0.15);
-      animation: rippleExpand 8s ease-out infinite;
-      pointer-events: none;
-    }
-    .ripple:nth-child(1) { left: 15%; bottom: 25%; animation-delay: 0s; }
-    .ripple:nth-child(2) { left: 60%; bottom: 45%; animation-delay: 2.5s; }
-    .ripple:nth-child(3) { left: 80%; bottom: 15%; animation-delay: 5s; }
-    .ripple:nth-child(4) { left: 35%; bottom: 55%; animation-delay: 1.5s; }
-    .ripple:nth-child(5) { left: 90%; bottom: 35%; animation-delay: 4s; }
-
-    @keyframes rippleExpand {
-      0% { width: 0; height: 0; opacity: 0.4; border-width: 1.5px; }
-      100% { width: 350px; height: 350px; margin-left: -175px; margin-top: -175px; opacity: 0; border-width: 0.5px; }
-    }
-
-    /* Light reflections */
-    .water-light {
-      position: absolute;
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: rgba(147, 197, 253, 0.35);
-      animation: lightFloat 10s ease-in-out infinite;
-    }
-    .water-light:nth-child(6) { left: 20%; bottom: 55%; animation-delay: 0s; }
-    .water-light:nth-child(7) { left: 50%; bottom: 65%; animation-delay: 2s; }
-    .water-light:nth-child(8) { left: 75%; bottom: 50%; animation-delay: 4s; }
-    .water-light:nth-child(9) { left: 30%; bottom: 75%; animation-delay: 6s; }
-    .water-light:nth-child(10) { left: 65%; bottom: 60%; animation-delay: 3s; }
-    .water-light:nth-child(11) { left: 85%; bottom: 70%; animation-delay: 5s; }
-
-    @keyframes lightFloat {
-      0%, 100% { opacity: 0; transform: translateY(0); }
-      30% { opacity: 0.5; }
-      60% { opacity: 0.2; transform: translateY(-12px); }
-    }
-
-    [data-theme="dark"] .ripple { border-color: rgba(99, 180, 255, 0.12); }
-    [data-theme="dark"] .water-light { background: rgba(147, 197, 253, 0.25); }
 
     .container { position: relative; z-index: 1; }
 
@@ -376,31 +313,7 @@
   <div class="grain" aria-hidden="true"></div>
   <div class="glow glow-1" aria-hidden="true"></div>
   <div class="glow glow-2" aria-hidden="true"></div>
-  <div id="water-bg" aria-hidden="true">
-    <!-- Flowing wave layers -->
-    <svg class="wave-svg w1" viewBox="0 0 2880 120" preserveAspectRatio="none" style="height:120px">
-      <path d="M0,60 C360,100 720,20 1080,60 C1440,100 1800,20 2160,60 C2520,100 2880,20 2880,60 L2880,120 L0,120 Z" fill="rgba(59,130,246,1)"/>
-    </svg>
-    <svg class="wave-svg w2" viewBox="0 0 2880 120" preserveAspectRatio="none" style="height:100px">
-      <path d="M0,80 C480,40 960,100 1440,60 C1920,20 2400,90 2880,50 L2880,120 L0,120 Z" fill="rgba(99,102,241,1)"/>
-    </svg>
-    <svg class="wave-svg w3" viewBox="0 0 2880 120" preserveAspectRatio="none" style="height:80px">
-      <path d="M0,50 C600,90 1200,30 1800,70 C2200,95 2600,40 2880,60 L2880,120 L0,120 Z" fill="rgba(139,92,246,1)"/>
-    </svg>
-    <!-- Ripples -->
-    <div class="ripple"></div>
-    <div class="ripple"></div>
-    <div class="ripple"></div>
-    <div class="ripple"></div>
-    <div class="ripple"></div>
-    <!-- Light reflections -->
-    <div class="water-light"></div>
-    <div class="water-light"></div>
-    <div class="water-light"></div>
-    <div class="water-light"></div>
-    <div class="water-light"></div>
-    <div class="water-light"></div>
-  </div>
+  <canvas id="pond-canvas" aria-hidden="true"></canvas>
 
   <div class="container">
     <header>
@@ -596,8 +509,9 @@
     loadPosts();
 
     // ===== POND WATER =====
-    // Pure CSS: flowing waves, ripples, and light reflections.
-    // Like the pond where a hippo contemplates existence.
+    // WebGL pixel waves with cursor interaction.
+    // Like ripples in the pond where a hippo contemplates existence.
   </script>
+  <script src="water-waves.js"></script>
 </body>
 </html>
