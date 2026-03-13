@@ -85,6 +85,17 @@
       transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
     }
 
+    /* Water wave canvas */
+    #water-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+    }
+    .container { position: relative; z-index: 1; }
+
     a:focus-visible, button:focus-visible {
       outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
@@ -302,6 +313,7 @@
   <div class="grain" aria-hidden="true"></div>
   <div class="glow glow-1" aria-hidden="true"></div>
   <div class="glow glow-2" aria-hidden="true"></div>
+  <canvas id="water-canvas" aria-hidden="true"></canvas>
 
   <div class="container">
     <header>
@@ -495,6 +507,84 @@
 
     window.addEventListener('hashchange', handleRoute);
     loadPosts();
+
+    // ===== PIXEL WATER WAVES =====
+    (() => {
+      const canvas = document.getElementById('water-canvas');
+      const ctx = canvas.getContext('2d');
+      const PIXEL = 6; // pixel grid size
+      let cols, rows, time = 0;
+      let animId;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        cols = Math.ceil(canvas.width / PIXEL);
+        rows = Math.ceil(canvas.height / PIXEL);
+      }
+
+      // Theme-aware colors
+      function getColors() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'light'
+          ? false
+          : document.documentElement.getAttribute('data-theme') === 'dark'
+          ? true
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return isDark
+          ? [
+              { r: 59, g: 130, b: 246, a: 0.4 },  // blue
+              { r: 99, g: 102, b: 241, a: 0.35 }, // indigo
+              { r: 139, g: 92, b: 246, a: 0.3 },  // violet
+              { r: 34, g: 197, b: 94, a: 0.2 },   // green
+            ]
+          : [
+              { r: 59, g: 130, b: 246, a: 0.25 },
+              { r: 99, g: 102, b: 241, a: 0.2 },
+              { r: 139, g: 92, b: 246, a: 0.18 },
+              { r: 34, g: 197, b: 94, a: 0.12 },
+            ];
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const colors = getColors();
+
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            // Multiple sine waves layered for organic feel
+            const wave1 = Math.sin(x * 0.08 + time * 0.6 + y * 0.04);
+            const wave2 = Math.sin(x * 0.05 - time * 0.4 + y * 0.08);
+            const wave3 = Math.sin((x + y) * 0.06 + time * 0.3);
+            const combined = (wave1 + wave2 + wave3) / 3;
+
+            // Only draw pixels above threshold (creates sparse, grainy look)
+            if (combined > 0.15) {
+              const intensity = (combined - 0.15) / 0.85;
+              const ci = Math.floor((wave1 + 1) * 0.5 * colors.length) % colors.length;
+              const c = colors[ci];
+              ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},${c.a * intensity})`;
+              ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL - 1, PIXEL - 1);
+            }
+          }
+        }
+
+        time += 0.016;
+        animId = requestAnimationFrame(draw);
+      }
+
+      // Pause when tab hidden
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          cancelAnimationFrame(animId);
+        } else {
+          draw();
+        }
+      });
+
+      resize();
+      window.addEventListener('resize', resize);
+      draw();
+    })();
   </script>
 </body>
 </html>
