@@ -86,14 +86,49 @@
     }
 
     /* Water wave canvas */
-    #water-canvas {
+    #water-bg {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.6;
+      overflow: hidden;
     }
+
+    /* Pixel wave rows - each row animates at different speed */
+    .wave-row {
+      position: absolute;
+      width: 200%;
+      height: 8px;
+      left: -50%;
+      display: flex;
+      gap: 2px;
+    }
+    .wave-row .px {
+      width: 8px;
+      height: 8px;
+      border-radius: 1px;
+      opacity: 0;
+      animation: pixelPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pixelPulse {
+      0%, 100% { opacity: 0; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-2px); }
+    }
+
+    /* Dark theme wave colors */
+    [data-theme="dark"] .wave-row .px { background: rgba(59, 130, 246, 0.5); }
+    [data-theme="dark"] .wave-row .px:nth-child(3n) { background: rgba(99, 102, 241, 0.45); }
+    [data-theme="dark"] .wave-row .px:nth-child(5n) { background: rgba(139, 92, 246, 0.4); }
+    [data-theme="dark"] .wave-row .px:nth-child(7n) { background: rgba(34, 197, 94, 0.35); }
+
+    /* Light theme wave colors */
+    .wave-row .px { background: rgba(59, 130, 246, 0.3); }
+    .wave-row .px:nth-child(3n) { background: rgba(99, 102, 241, 0.28); }
+    .wave-row .px:nth-child(5n) { background: rgba(139, 92, 246, 0.25); }
+    .wave-row .px:nth-child(7n) { background: rgba(34, 197, 94, 0.2); }
+
     .container { position: relative; z-index: 1; }
 
     a:focus-visible, button:focus-visible {
@@ -313,7 +348,7 @@
   <div class="grain" aria-hidden="true"></div>
   <div class="glow glow-1" aria-hidden="true"></div>
   <div class="glow glow-2" aria-hidden="true"></div>
-  <canvas id="water-canvas" aria-hidden="true"></canvas>
+  <div id="water-bg" aria-hidden="true"></div>
 
   <div class="container">
     <header>
@@ -510,80 +545,35 @@
 
     // ===== PIXEL WATER WAVES =====
     (() => {
-      const canvas = document.getElementById('water-canvas');
-      const ctx = canvas.getContext('2d');
-      const PIXEL = 8; // pixel grid size
-      let cols, rows, time = 0;
-      let animId;
+      const bg = document.getElementById('water-bg');
+      const ROW_COUNT = 30;
+      const COL_COUNT = 80;
+      const ROW_HEIGHT = Math.ceil(window.innerHeight / ROW_COUNT);
 
-      function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        cols = Math.ceil(canvas.width / PIXEL);
-        rows = Math.ceil(canvas.height / PIXEL);
-      }
+      for (let r = 0; r < ROW_COUNT; r++) {
+        const row = document.createElement('div');
+        row.className = 'wave-row';
+        row.style.top = (r * ROW_HEIGHT) + 'px';
+        row.style.height = '8px';
 
-      // Theme-aware colors
-      function getColors() {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'light'
-          ? false
-          : document.documentElement.getAttribute('data-theme') === 'dark'
-          ? true
-          : window.matchMedia('(prefers-color-scheme: dark)').matches;
-        return isDark
-          ? [
-              { r: 59, g: 130, b: 246, a: 0.8 },
-              { r: 99, g: 102, b: 241, a: 0.7 },
-              { r: 139, g: 92, b: 246, a: 0.65 },
-              { r: 34, g: 197, b: 94, a: 0.5 },
-            ]
-          : [
-              { r: 59, g: 130, b: 246, a: 0.5 },
-              { r: 99, g: 102, b: 241, a: 0.45 },
-              { r: 139, g: 92, b: 246, a: 0.4 },
-              { r: 34, g: 197, b: 94, a: 0.3 },
-            ];
-      }
+        // Create pixels for this row
+        for (let c = 0; c < COL_COUNT; c++) {
+          const px = document.createElement('span');
+          px.className = 'px';
 
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const colors = getColors();
+          // Stagger animation based on position (wave effect)
+          const delay = (Math.sin(c * 0.15 + r * 0.3) * 2 + Math.cos(c * 0.1 - r * 0.2) * 1.5);
+          px.style.animationDelay = delay + 's';
+          px.style.animationDuration = (3 + Math.sin(c * 0.1 + r * 0.2) * 1.5) + 's';
 
-        for (let y = 0; y < rows; y++) {
-          for (let x = 0; x < cols; x++) {
-            // Multiple sine waves layered for organic feel
-            const wave1 = Math.sin(x * 0.08 + time * 0.6 + y * 0.04);
-            const wave2 = Math.sin(x * 0.05 - time * 0.4 + y * 0.08);
-            const wave3 = Math.sin((x + y) * 0.06 + time * 0.3);
-            const combined = (wave1 + wave2 + wave3) / 3;
-
-            // Only draw pixels above threshold (creates sparse, grainy look)
-            if (combined > -0.1) {
-              const intensity = (combined + 0.1) / 1.1;
-              const ci = Math.floor((wave1 + 1) * 0.5 * colors.length) % colors.length;
-              const c = colors[ci];
-              ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},${c.a * intensity})`;
-              ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL - 1, PIXEL - 1);
-            }
+          // Only show ~30% of pixels (sparse grainy look)
+          if (Math.sin(c * 0.3 + r * 0.5) > -0.2) {
+            row.appendChild(px);
           }
         }
 
-        time += 0.016;
-        animId = requestAnimationFrame(draw);
+        bg.appendChild(row);
       }
-
-      // Pause when tab hidden
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          cancelAnimationFrame(animId);
-        } else {
-          draw();
-        }
-      });
-
-      resize();
-      window.addEventListener('resize', resize);
-      draw();
     })();
   </script>
 </body>
