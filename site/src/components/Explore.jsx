@@ -337,25 +337,25 @@ export default function Explore() {
 
         if (edgeType === 'temporal') {
           ctx.setLineDash([3, 6])
-          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.2)`
-          ctx.globalAlpha = dm ? 0.03 : hi ? 0.6 : Math.max(0.08, 0.2 * alpha)
-          ctx.lineWidth = 0.5
+          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.4)`
+          ctx.globalAlpha = dm ? 0.05 : hi ? 0.8 : 0.35
+          ctx.lineWidth = 0.8
         } else if (edgeType === 'tag-shared') {
           ctx.setLineDash([])
-          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.3)`
-          ctx.globalAlpha = dm ? 0.04 : hi ? 0.7 : Math.max(0.1, 0.3 * alpha)
-          ctx.lineWidth = hi ? 1.2 : 0.6
+          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.5)`
+          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.45
+          ctx.lineWidth = hi ? 2 : 1
         } else if (edgeType === 'tag-bridge') {
           ctx.setLineDash([])
           const col = COLORS[s.cat] || COLORS[t.cat] || th.accent
-          ctx.strokeStyle = hi ? th.accent : col + '55'
-          ctx.globalAlpha = dm ? 0.04 : hi ? 0.7 : Math.max(0.1, 0.35 * alpha)
-          ctx.lineWidth = hi ? 1.2 : 0.6
+          ctx.strokeStyle = hi ? th.accent : col + '88'
+          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.5
+          ctx.lineWidth = hi ? 2 : 1
         } else {
           ctx.setLineDash([])
-          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.35)`
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.8 : Math.max(0.15, 0.4 * alpha)
-          ctx.lineWidth = hi ? 1.5 : 0.75
+          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.55)`
+          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.5
+          ctx.lineWidth = hi ? 2 : 1.2
         }
 
         ctx.stroke()
