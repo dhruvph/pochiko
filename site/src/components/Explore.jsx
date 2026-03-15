@@ -61,7 +61,25 @@ function forceBoundary(w, h, pad = 30) {
   return f
 }
 
+const CORE_IDS = new Set(CORES.map(c => c.id))
+
 function nColor(n) { return n.core ? '#e2e2ea' : COLORS[n.cat] || '#666' }
+
+function getThemeColors() {
+  const s = getComputedStyle(document.documentElement)
+  const bgElevated = s.getPropertyValue('--bg-elevated').trim() || '#111116'
+  const bg = s.getPropertyValue('--bg').trim() || '#0a0a0c'
+  const text = s.getPropertyValue('--text').trim() || '#e2e2ea'
+  const textSec = s.getPropertyValue('--text-secondary').trim() || '#8888a0'
+  const border = s.getPropertyValue('--border').trim() || '#1c1c26'
+  const accent = s.getPropertyValue('--accent').trim() || '#7b9bff'
+  // Parse border for rgba fallback
+  const tmp = document.createElement('canvas').getContext('2d')
+  tmp.fillStyle = border
+  const bc = tmp.fillStyle // normalized hex
+  const br = parseInt(bc.slice(1,3),16), bg2 = parseInt(bc.slice(3,5),16), bb = parseInt(bc.slice(5,7),16)
+  return { bgElevated, bg, text, textSec, border, accent, br, bg2, bb }
+}
 
 export default function Explore() {
   const navigate = useNavigate()
@@ -70,6 +88,8 @@ export default function Explore() {
   const hoveredRef = useRef(null)
   const animRef = useRef(null)
   const dataRef = useRef(null)
+  const dragRef = useRef(null)
+  const themeRef = useRef(getThemeColors())
   const [hovered, setHovered] = useState(null)
   const [collapsed, setCollapsed] = useState(false)
   const [cats, setCats] = useState(new Set())
@@ -148,6 +168,10 @@ export default function Explore() {
       ctx.clearRect(0, 0, W, H)
       const alpha = simRef.current?.alpha() ?? 1
 
+      // Refresh theme colors each frame
+      themeRef.current = getThemeColors()
+      const th = themeRef.current
+
       // Edges
       links.forEach(l => {
         const s = l.source, t = l.target
@@ -157,7 +181,7 @@ export default function Explore() {
         ctx.beginPath()
         ctx.moveTo(s.x, s.y)
         ctx.quadraticCurveTo((s.x+t.x)/2-(t.y-s.y)*0.08, (s.y+t.y)/2+(t.x-s.x)*0.08, t.x, t.y)
-        ctx.strokeStyle = hi ? '#6b8cff' : 'rgba(148,163,184,0.25)'
+        ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.35)`
         ctx.globalAlpha = dm ? 0.05 : hi ? 0.8 : Math.max(0.15, 0.4*alpha)
         ctx.lineWidth = hi ? 1.5 : 0.75
         ctx.stroke()
@@ -182,14 +206,14 @@ export default function Explore() {
         // Circle
         const r = isH ? n.r+3 : n.r
         ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI*2)
-        ctx.fillStyle = n.core ? '#1a1a2e' : '#0d0d14'; ctx.fill()
+        ctx.fillStyle = n.core ? th.bgElevated : th.bg; ctx.fill()
         ctx.strokeStyle = col; ctx.lineWidth = isH ? 2.5 : n.core ? 1.5 : 1; ctx.stroke()
 
         // Label
         const lines = n.label.split('\n')
         const fs = n.core ? 10 : n.r > 20 ? 7.5 : 6.5
         ctx.font = `${n.core?'600':'400'} ${fs}px "JetBrains Mono","Fira Code",monospace`
-        ctx.fillStyle = dm ? '#666' : n.core ? '#e2e2ea' : '#a0a0b0'
+        ctx.fillStyle = dm ? th.textSec : n.core ? th.text : th.textSec
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
         const lh = fs + 2, sy = n.y - ((lines.length-1)*lh)/2
         lines.forEach((ln,li) => ctx.fillText(ln, n.x, sy+li*lh))
@@ -207,18 +231,60 @@ export default function Explore() {
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current) }
   }, [dims])
 
+  const hitTest = useCallback((mx, my) => {
+    if (!dataRef.current) return null
+    for (const n of dataRef.current.nodes) {
+      const dx = n.x-mx, dy = n.y-my
+      if (dx*dx+dy*dy <= (n.r+4)*(n.r+4)) return n
+    }
+    return null
+  }, [])
+
+  const handleMouseDown = useCallback((e) => {
+    const r = canvasRef.current?.getBoundingClientRect()
+    if (!r || !dataRef.current) return
+    const mx = e.clientX - r.left, my = e.clientY - r.top
+    const n = hitTest(mx, my)
+    if (n && !n.core) {
+      dragRef.current = { nodeId: n.id, offsetX: mx - n.x, offsetY: my - n.y }
+      n.fx = n.x; n.fy = n.y
+      simRef.current?.alpha(0.3).restart()
+    }
+  }, [hitTest])
+
   const handleMove = useCallback((e) => {
     const r = canvasRef.current?.getBoundingClientRect()
     if (!r || !dataRef.current) return
     const mx = e.clientX - r.left, my = e.clientY - r.top
-    let f = null
-    for (const n of dataRef.current.nodes) {
-      const dx = n.x-mx, dy = n.y-my
-      if (dx*dx+dy*dy <= (n.r+4)*(n.r+4)) { f = n.id; break }
+
+    if (dragRef.current) {
+      const n = dataRef.current.nodes.find(n => n.id === dragRef.current.nodeId)
+      if (n) {
+        n.fx = mx - dragRef.current.offsetX
+        n.fy = my - dragRef.current.offsetY
+        simRef.current?.alpha(0.1).restart()
+      }
+      canvasRef.current.style.cursor = 'grabbing'
+      return
     }
-    hoveredRef.current = f; setHovered(f)
-    canvasRef.current.style.cursor = f && dataRef.current.nodes.find(n=>n.id===f)?.date ? 'pointer' : 'default'
+
+    const f = hitTest(mx, my)
+    hoveredRef.current = f?.id || null; setHovered(f?.id || null)
+    canvasRef.current.style.cursor = f?.date ? 'pointer' : 'default'
+  }, [hitTest])
+
+  const handleMouseUp = useCallback(() => {
+    if (!dragRef.current || !dataRef.current) return
+    const n = dataRef.current.nodes.find(n => n.id === dragRef.current.nodeId)
+    if (n && !CORE_IDS.has(n.id)) { n.fx = null; n.fy = null }
+    dragRef.current = null
   }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    handleMouseUp()
+    hoveredRef.current = null; setHovered(null)
+    if (canvasRef.current) canvasRef.current.style.cursor = 'default'
+  }, [handleMouseUp])
 
   const handleClick = useCallback(() => {
     if (!hovered || !dataRef.current) return
@@ -271,7 +337,9 @@ export default function Explore() {
       </aside>
       <div className="explore-graph">
         <canvas ref={canvasRef} style={{ width:'100%', height:'100%', display:'block' }}
-          onMouseMove={handleMove} onClick={handleClick} />
+          onMouseDown={handleMouseDown} onMouseMove={handleMove}
+          onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave}
+          onClick={handleClick} />
         <div className="explore-hint">hover nodes to explore · click posts to read</div>
       </div>
     </div>
