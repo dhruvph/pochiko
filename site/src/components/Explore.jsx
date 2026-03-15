@@ -63,7 +63,7 @@ function forceBoundary(w, h, pad = 30) {
 
 const CORE_IDS = new Set(CORES.map(c => c.id))
 
-function nColor(n) { return n.core ? '#e2e2ea' : COLORS[n.cat] || '#666' }
+function nColor(n, th) { return n.core ? th.text : COLORS[n.cat] || th.textSec }
 
 function getThemeColors() {
   const s = getComputedStyle(document.documentElement)
@@ -73,10 +73,9 @@ function getThemeColors() {
   const textSec = s.getPropertyValue('--text-secondary').trim() || '#8888a0'
   const border = s.getPropertyValue('--border').trim() || '#1c1c26'
   const accent = s.getPropertyValue('--accent').trim() || '#7b9bff'
-  // Parse border for rgba fallback
   const tmp = document.createElement('canvas').getContext('2d')
   tmp.fillStyle = border
-  const bc = tmp.fillStyle // normalized hex
+  const bc = tmp.fillStyle
   const br = parseInt(bc.slice(1,3),16), bg2 = parseInt(bc.slice(3,5),16), bb = parseInt(bc.slice(5,7),16)
   return { bgElevated, bg, text, textSec, border, accent, br, bg2, bb }
 }
@@ -90,6 +89,9 @@ export default function Explore() {
   const dataRef = useRef(null)
   const dragRef = useRef(null)
   const themeRef = useRef(getThemeColors())
+  const catsRef = useRef(new Set())
+  const interactingRef = useRef(false)
+  const grainCanvasRef = useRef(null)
   const [hovered, setHovered] = useState(null)
   const [collapsed, setCollapsed] = useState(false)
   const [cats, setCats] = useState(new Set())
@@ -144,6 +146,28 @@ export default function Explore() {
     return () => { sim.stop(); if (animRef.current) cancelAnimationFrame(animRef.current) }
   }, [dims, allNodes, allLinks])
 
+  // Theme observer — cache theme colors, refresh on data-theme change
+  useEffect(() => {
+    themeRef.current = getThemeColors()
+    const observer = new MutationObserver(() => { themeRef.current = getThemeColors() })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
+
+  // Pre-render grain to offscreen canvas (theme-aware)
+  useEffect(() => {
+    const gc = document.createElement('canvas')
+    gc.width = 200; gc.height = 200
+    const gctx = gc.getContext('2d')
+    const th = themeRef.current
+    gctx.fillStyle = th.text
+    for (let i = 0; i < 80; i++) gctx.fillRect(Math.random()*200, Math.random()*200, 1, 1)
+    grainCanvasRef.current = gc
+  }, [])
+
+  // Sync cats ref
+  useEffect(() => { catsRef.current = cats }, [cats])
+
   // Canvas render loop
   useEffect(() => {
     const canvas = canvasRef.current
@@ -152,6 +176,8 @@ export default function Explore() {
     const dpr = window.devicePixelRatio || 1
     canvas.width = dims.w * dpr; canvas.height = dims.h * dpr
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    let prevHId = null
+    let prevAlpha = -1
 
     function draw() {
       const data = dataRef.current
@@ -159,6 +185,21 @@ export default function Explore() {
       const { nodes, links } = data
       const W = dims.w, H = dims.h
       const hId = hoveredRef.current
+      const sim = simRef.current
+      const alpha = sim?.alpha() ?? 0
+      const simActive = alpha > 0.001
+      const activeCats = catsRef.current
+      const isFiltering = activeCats.size > 0
+      const interacting = dragRef.current || hId
+
+      // Skip redrawing if nothing changed (sim settled, no hover change)
+      if (!simActive && !interacting && hId === prevHId && alpha === prevAlpha) {
+        animRef.current = requestAnimationFrame(draw)
+        return
+      }
+      prevHId = hId
+      prevAlpha = alpha
+
       const conn = new Set()
       if (hId) { conn.add(hId); links.forEach(l => {
         const s=l.source.id||l.source, t=l.target.id||l.target
@@ -166,16 +207,17 @@ export default function Explore() {
       })}
 
       ctx.clearRect(0, 0, W, H)
-      const alpha = simRef.current?.alpha() ?? 1
-
-      // Refresh theme colors each frame
-      themeRef.current = getThemeColors()
       const th = themeRef.current
 
-      // Edges
+      // Edges — skip if either endpoint is filtered out
       links.forEach(l => {
         const s = l.source, t = l.target
-        if (!s.x || !t.x) return
+        if (s.x == null || t.x == null) return
+        if (isFiltering) {
+          const sVis = !s.cat || activeCats.has(s.cat)
+          const tVis = !t.cat || activeCats.has(t.cat)
+          if (!sVis || !tVis) return
+        }
         const hi = hId && (s.id===hId || t.id===hId)
         const dm = hId && !hi
         ctx.beginPath()
@@ -187,13 +229,15 @@ export default function Explore() {
         ctx.stroke()
       })
 
-      // Nodes
+      // Nodes — skip if filtered out by category
       ctx.globalAlpha = 1
       nodes.forEach(n => {
+        if (n.x == null) return
+        if (isFiltering && n.cat && !activeCats.has(n.cat)) return
         const isH = hId === n.id
         const isC = hId ? conn.has(n.id) : true
         const dm = hId && !isC
-        const col = nColor(n)
+        const col = nColor(n, th)
         ctx.save(); ctx.globalAlpha = dm ? 0.12 : 1
 
         // Core glow
@@ -220,9 +264,14 @@ export default function Explore() {
         ctx.restore()
       })
 
-      // Grain overlay
-      ctx.globalAlpha = 0.015; ctx.fillStyle = '#fff'
-      for (let i = 0; i < 300; i++) ctx.fillRect(Math.random()*W, Math.random()*H, 1, 1)
+      // Grain overlay (pre-rendered offscreen canvas)
+      const gc = grainCanvasRef.current
+      if (gc) {
+        ctx.globalAlpha = 0.02
+        const pat = ctx.createPattern(gc, 'repeat')
+        ctx.fillStyle = pat
+        ctx.fillRect(0, 0, W, H)
+      }
       ctx.globalAlpha = 1
 
       animRef.current = requestAnimationFrame(draw)

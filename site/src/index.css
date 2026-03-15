@@ -848,6 +848,10 @@ footer {
   animation: pageIn 0.5s var(--ease-out);
 }
 
+.explore-layout:has(.explore-sidebar.collapsed) {
+  grid-template-columns: 0 1fr;
+}
+
 /* ── Sidebar ── */
 .explore-sidebar {
   border-right: 1px solid var(--border);
