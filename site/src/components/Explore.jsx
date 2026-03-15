@@ -314,16 +314,6 @@ export default function Explore() {
       ctx.clearRect(0, 0, W, H)
       const th = themeRef.current
 
-      // Debug: log once
-      if (!draw._logged) {
-        draw._logged = true
-        console.log('[explore] canvas:', W, 'x', H, '| nodes:', nodes.length, '| links:', links.length, '| th.border:', th.border, '| th.accent:', th.accent)
-        links.forEach(l => {
-          const s = l.source, t = l.target
-          console.log('[explore] edge:', l.type, s.id, '->', t.id, 's.x:', s.x?.toFixed(0), 't.x:', t.x?.toFixed(0))
-        })
-      }
-
       // Edges
       links.forEach(l => {
         const s = l.source, t = l.target
@@ -347,24 +337,24 @@ export default function Explore() {
 
         if (edgeType === 'temporal') {
           ctx.setLineDash([3, 6])
-          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.4)`
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.8 : 0.35
+          ctx.strokeStyle = hi ? th.accent : th.textSec
+          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.25
           ctx.lineWidth = 0.8
         } else if (edgeType === 'tag-shared') {
           ctx.setLineDash([])
-          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.5)`
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.45
+          ctx.strokeStyle = hi ? th.accent : th.textSec
+          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.35
           ctx.lineWidth = hi ? 2 : 1
         } else if (edgeType === 'tag-bridge') {
           ctx.setLineDash([])
           const col = COLORS[s.cat] || COLORS[t.cat] || th.accent
-          ctx.strokeStyle = hi ? th.accent : col + '88'
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.5
+          ctx.strokeStyle = hi ? th.accent : col
+          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.4
           ctx.lineWidth = hi ? 2 : 1
         } else {
           ctx.setLineDash([])
-          ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.55)`
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.5
+          ctx.strokeStyle = hi ? th.accent : th.textSec
+          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.4
           ctx.lineWidth = hi ? 2 : 1.2
         }
 
