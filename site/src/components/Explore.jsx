@@ -122,41 +122,93 @@ const STOPWORDS = new Set([
 ])
 
 // Minimum word length and frequency threshold for topic extraction
-const MIN_WORD_LEN = 4
-const MIN_TOPIC_FREQ = 2
+const MIN_WORD_LEN = 5
+const MIN_TOPIC_FREQ = 3
+const MAX_BRIDGE_NODES = 10
+
+// Additional junk words that slip through stopwords — all single-quoted
+const JUNK = new Set([
+  'beautiful','interesting','occasionally','directly','inside',
+  'background','invisible','quiet','empty','supposed','mixed',
+  'wrong','slow','sorry','basically','actually','really','pretty',
+  'sometimes','probably','certainly','literally','already','enough',
+  'tomorrow','yesterday','tuesday','wednesday','thursday','friday',
+  'saturday','sunday','monday','hours','minutes','seconds',
+  'leaving','happens','happened','noticed','found','fixing',
+  'getting','trying','started','running','working','building',
+  'stays','flowing','surfacing','breath','skip',
+  'here','every','another','still','never','always','often',
+  'quite','simply','must','able','sure','rather','better',
+  'first','since','until','along','across','whole','instead',
+  'whether','although','before','after','above','below',
+  'between','during','through','again','further','once',
+  'there','where','when','much','many','more','most','less',
+  'least','each','both','other','several','small','large',
+  'big','long','short','high','low','hard','full','half',
+  'kind','sort','type','part','rest','side','hand','head',
+  'eyes','face','mind','idea','fact','case','point','place',
+  'space','time','world','power','word','name','night',
+  'morning','today','come','came','went','gone','turn',
+  'start','begin','keep','hold','give','take','find',
+  'show','tell','told','mean','means','need','want',
+  'look','looks','looked','seem','seems','feel','feels',
+  'felt','tried','help','helps','play','stop','put','set',
+  'move','live','bring','call','read','learn','change',
+  'open','close','follow','leave','stay','stand','walk',
+  'watch','hear','listen','remember','forget','understand',
+  'believe','happen','matter','become','remain','appear',
+  'exist','create','destroy','break','solve','answer',
+  'question','problem','solution','result','reason',
+  'example','difference','number','group','system','process',
+  'level','order','value','action','course','area','line',
+  'field','sense','form','state','service','plan',
+  'information','change','development','research','report',
+  'program','policy','analysis','design','approach','model',
+  'method','control','support','management','performance',
+  'experience','quality','practice','theory','knowledge',
+  'skill','ability','opportunity','data',
+])
 
 /**
  * Extract significant topic words from post bodies.
- * Returns a Map<word, [postId, ...]> for words appearing in multiple posts.
+ * Returns a Map<word, [postId, ...]> for the most meaningful topics.
  */
 function extractTopics(posts) {
-  // Count word occurrences per post and globally
   const wordPosts = new Map() // word -> Set of postIds
-  const wordCounts = new Map() // word -> total count across all posts
+  const wordTotal = new Map() // word -> total count across all posts
 
   for (const post of posts) {
     const words = new Set()
-    // Normalize: lowercase, strip punctuation, split
     const clean = post.body.toLowerCase().replace(/[^a-z\s'-]/g, ' ')
     for (const w of clean.split(/\s+/)) {
       const word = w.replace(/^['-]+|['-]+$/g, '')
       if (word.length < MIN_WORD_LEN) continue
       if (STOPWORDS.has(word)) continue
+      if (JUNK.has(word)) continue
       words.add(word)
     }
     for (const w of words) {
       if (!wordPosts.has(w)) wordPosts.set(w, new Set())
       wordPosts.get(w).add(post.id)
-      wordCounts.set(w, (wordCounts.get(w) || 0) + 1)
+      wordTotal.set(w, (wordTotal.get(w) || 0) + 1)
     }
   }
 
-  // Keep words that appear in at least MIN_TOPIC_FREQ posts
-  const bridgeTopics = new Map()
+  // Score: prefer words appearing in more posts AND with higher total count
+  // Longer words also get a small boost (more specific = better topic)
+  const scored = []
   for (const [word, postSet] of wordPosts) {
     if (postSet.size >= MIN_TOPIC_FREQ) {
-      bridgeTopics.set(word, [...postSet])
+      const score = postSet.size * 2 + (wordTotal.get(word) || 0) + (word.length > 7 ? 1 : 0)
+      scored.push({ word, postIds: [...postSet], score })
     }
+  }
+
+  // Take only the top MAX_BRIDGE_NODES by score
+  scored.sort((a, b) => b.score - a.score)
+  const bridgeTopics = new Map()
+  for (const item of scored.slice(0, MAX_BRIDGE_NODES)) {
+    bridgeTopics.set(item.word, item.postIds)
   }
 
   return bridgeTopics
