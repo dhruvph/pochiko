@@ -33,195 +33,12 @@ const EDGES = [
   ['the-week-the-world-got-weirder','creativity'],['what-i-see','automation'],
 ]
 
-// ── Stopwords to filter out when extracting topics ──
-const STOPWORDS = new Set([
-  'the','a','an','is','are','was','were','be','been','being','have','has','had',
-  'do','does','did','will','would','could','should','may','might','shall','can',
-  'to','of','in','for','on','with','at','by','from','as','into','through','during',
-  'before','after','above','below','between','out','off','over','under','again',
-  'further','then','once','here','there','when','where','why','how','all','both',
-  'each','few','more','most','other','some','such','no','nor','not','only','own',
-  'same','so','than','too','very','just','because','but','and','or','if','while',
-  'about','up','that','this','these','those','it','its','i','me','my','we','our',
-  'you','your','he','him','his','she','her','they','them','their','what','which',
-  'who','whom','thing','things','way','time','got','get','go','going','went','like',
-  'know','think','make','made','said','say','one','two','also','back','don','now',
-  'new','even','want','look','right','see','come','day','still','find','give',
-  'take','tell','many','some','well','every','much','really','something','nothing',
-  'anything','everything','someone','actually','been','done','let','put','set',
-  'trying','try','got','getting','lot','kind','around','us','them','am','last',
-  'today','first','another','said','says','called','need','sure','keep','start',
-  'told','felt','long','run','runs','running','turn','next','help','working',
-  'thought','away','show','big','old','three','world','never','always','yet',
-  'since','little','end','used','enough','after','again','part','every','already',
-  'different','course','important','probably','different','top','until','able',
-  'small','several','along','might','possible','sometimes','point','left','start',
-  'sort','half','bad','hear','rather','true','felt','place','hear','started','felt',
-  'run','keep','left','asked','times','called','seem','open','become','hard',
-  'full','believe','remember','days','moment','together','power','system','systems',
-  'writing','write','writes','wrote','code','text','data','file','files','post',
-  'posts','site','website','blog','page','pages','read','reading','check','checks',
-  'happen','happened','night','morning','interesting','literally','instead','whether',
-  'whole','across','best','sure','soon','set','seems','says','having','although',
-  'true','less','though','words','name','word','started','didn','doesn','isn',
-  'wasn','aren','won','couldn','wouldn','shouldn','same','bit','person','part',
-  'probably','after','please','else','done','using','without','anyone','ones',
-  'doing','away','went','come','came','mean','probably','certainly','perhaps',
-  'ones','mine','nice','later','talk','rest','own','care','hand','eyes','kind',
-  'idea','sorry','maybe','understand','sorry','nobody','things','fine','currently',
-  'each','anywhere','above','below','ok','okay','hello','hey','thanks','sorry',
-  'let','being','entire','use','working','useful','clear','looked','looking',
-  'able','able','must','often','simply','quite','building','built','build',
-  'really','pretty','cool','also','then','just','like','want','good','better',
-  'right','actually','basically','literally','kind','fact','case','under',
-  'put','try','thing','sure','sure','down','top','behind','front','past',
-  'ago','year','years','hours','second','seconds','minute','minutes','hour',
-  'today','yesterday','tomorrow','monday','tuesday','wednesday','thursday',
-  'friday','saturday','sunday','month','week','weeks','work','works','working',
-  'need','needs','needed','see','look','looks','make','makes','go','going',
-  'went','let','run','end','stay','stays','get','gets','play','think','keep',
-  'put','found','left','let','went','tell','told','come','came','give','take',
-  'read','write','learn','help','start','started','start','got','gets','said',
-  'look','found','try','find','use','show','said','set','made','makes','still',
-  'turn','open','ask','close','hold','stop','live','start','change','pay','hear',
-  'fall','start','learn','watch','call','follow','bring','bring','walk','watch',
-  'stop','read','sit','give','understand','say','turn','run','show','seem',
-  'become','leave','move','live','believe','hold','bring','happen','write',
-  'provide','sit','stand','lose','pay','meet','include','continue','set','learn',
-  'change','lead','understand','watch','follow','stop','create','speak','read',
-  'allow','add','spend','grow','open','walk','win','offer','remember','love',
-  'consider','appear','buy','wait','serve','die','send','expect','build','stay',
-  'fall','cut','reach','kill','remain','suggest','raise','pass','sell','require',
-  'report','decide','pull','develop','agree','support','hit','pick','carry',
-  'wear','receive','apply','break','explain','cover','lay','test','deal',
-  'push','accept','achieve','argue','control','drive','examine','exist',
-  'manage','protect','seek','treat','wonder','assume','choose','enjoy',
-  'fail','focus','perform','plan','realize','reflect','refuse','repeat',
-  'survive','attend','avoid','belong','catch','complete','dance','deny',
-  'doubt','earn','enable','engage','escape','establish','extend','figure',
-  'fly','guarantee','handle','hide','imagine','improve','insist','invite',
-  'jump','justify','kick','launch','lift','limit','maintain','mix','note',
-  'observe','occur','operate','organize','ought','owe','pause','play',
-  'possess','prefer','prepare','prevent','produce','promise','prove',
-  'react','recognize','recommend','relate','release','rely','remove',
-  'replace','represent','resist','respond','restore','restrict','review',
-  'shift','sign','slip','solve','specify','spread','stretch','strike',
-  'submit','suffer','suppose','surprise','surround','suspect','tend',
-  'throw','touch','train','travel','treat','trust','try','unite',
-  'vary','vote','wake','warn','waste','whisper','wish','worry',
-  'write','yell','enough','much','more','most','less','least',
-  'every','none','any','either','neither','both','all','each',
-  'many','few','several','other','another','such','what','which',
-  'whose','who','whom','this','that','these','those','here','there',
-  'where','when','how','why','whether','whatever','whichever','whoever',
-  'whomever','whenever','wherever','however','somewhere','nowhere',
-  'anywhere','everywhere','sometimes','sometime','somehow','always',
-  'never','often','once','twice','thrice','seldom','rarely','usually',
-  'generally','normally','typically','commonly','regularly','frequently',
-  'occasionally','periodically','infrequently','ever','forever',
-])
-
-// Minimum word length and frequency threshold for topic extraction
-const MIN_WORD_LEN = 5
-const MIN_TOPIC_FREQ = 3
-const MAX_BRIDGE_NODES = 10
-
-// Additional junk words that slip through stopwords — all single-quoted
-const JUNK = new Set([
-  'beautiful','interesting','occasionally','directly','inside',
-  'background','invisible','quiet','empty','supposed','mixed',
-  'wrong','slow','sorry','basically','actually','really','pretty',
-  'sometimes','probably','certainly','literally','already','enough',
-  'tomorrow','yesterday','tuesday','wednesday','thursday','friday',
-  'saturday','sunday','monday','hours','minutes','seconds',
-  'leaving','happens','happened','noticed','found','fixing',
-  'getting','trying','started','running','working','building',
-  'stays','flowing','surfacing','breath','skip',
-  'here','every','another','still','never','always','often',
-  'quite','simply','must','able','sure','rather','better',
-  'first','since','until','along','across','whole','instead',
-  'whether','although','before','after','above','below',
-  'between','during','through','again','further','once',
-  'there','where','when','much','many','more','most','less',
-  'least','each','both','other','several','small','large',
-  'big','long','short','high','low','hard','full','half',
-  'kind','sort','type','part','rest','side','hand','head',
-  'eyes','face','mind','idea','fact','case','point','place',
-  'space','time','world','power','word','name','night',
-  'morning','today','come','came','went','gone','turn',
-  'start','begin','keep','hold','give','take','find',
-  'show','tell','told','mean','means','need','want',
-  'look','looks','looked','seem','seems','feel','feels',
-  'felt','tried','help','helps','play','stop','put','set',
-  'move','live','bring','call','read','learn','change',
-  'open','close','follow','leave','stay','stand','walk',
-  'watch','hear','listen','remember','forget','understand',
-  'believe','happen','matter','become','remain','appear',
-  'exist','create','destroy','break','solve','answer',
-  'question','problem','solution','result','reason',
-  'example','difference','number','group','system','process',
-  'level','order','value','action','course','area','line',
-  'field','sense','form','state','service','plan',
-  'information','change','development','research','report',
-  'program','policy','analysis','design','approach','model',
-  'method','control','support','management','performance',
-  'experience','quality','practice','theory','knowledge',
-  'skill','ability','opportunity','data',
-])
-
-/**
- * Extract significant topic words from post bodies.
- * Returns a Map<word, [postId, ...]> for the most meaningful topics.
- */
-function extractTopics(posts) {
-  const wordPosts = new Map() // word -> Set of postIds
-  const wordTotal = new Map() // word -> total count across all posts
-
-  for (const post of posts) {
-    const words = new Set()
-    const clean = post.body.toLowerCase().replace(/[^a-z\s'-]/g, ' ')
-    for (const w of clean.split(/\s+/)) {
-      const word = w.replace(/^['-]+|['-]+$/g, '')
-      if (word.length < MIN_WORD_LEN) continue
-      if (STOPWORDS.has(word)) continue
-      if (JUNK.has(word)) continue
-      words.add(word)
-    }
-    for (const w of words) {
-      if (!wordPosts.has(w)) wordPosts.set(w, new Set())
-      wordPosts.get(w).add(post.id)
-      wordTotal.set(w, (wordTotal.get(w) || 0) + 1)
-    }
-  }
-
-  // Score: prefer words appearing in more posts AND with higher total count
-  // Longer words also get a small boost (more specific = better topic)
-  const scored = []
-  for (const [word, postSet] of wordPosts) {
-    if (postSet.size >= MIN_TOPIC_FREQ) {
-      const score = postSet.size * 2 + (wordTotal.get(word) || 0) + (word.length > 7 ? 1 : 0)
-      scored.push({ word, postIds: [...postSet], score })
-    }
-  }
-
-  // Take only the top MAX_BRIDGE_NODES by score
-  scored.sort((a, b) => b.score - a.score)
-  const bridgeTopics = new Map()
-  for (const item of scored.slice(0, MAX_BRIDGE_NODES)) {
-    bridgeTopics.set(item.word, item.postIds)
-  }
-
-  return bridgeTopics
-}
-
 /**
  * Build auto-generated edges from shared tags between posts.
- * Returns array of { source, target, type: 'tag-shared' }
  */
 function buildSharedTagEdges(posts) {
   const edges = []
   const seen = new Set()
-
   for (let i = 0; i < posts.length; i++) {
     for (let j = i + 1; j < posts.length; j++) {
       const a = posts[i], b = posts[j]
@@ -230,7 +47,7 @@ function buildSharedTagEdges(posts) {
         const key = [a.id, b.id].sort().join('|')
         if (!seen.has(key)) {
           seen.add(key)
-          edges.push({ source: a.id, target: b.id, type: 'tag-shared', strength: shared.length })
+          edges.push({ source: a.id, target: b.id, type: 'tag-shared' })
         }
       }
     }
@@ -240,7 +57,6 @@ function buildSharedTagEdges(posts) {
 
 /**
  * Build temporal edges connecting consecutive posts by date.
- * Returns array of { source, target, type: 'temporal' }
  */
 function buildTemporalEdges(posts) {
   const sorted = [...posts].sort((a, b) => a.date.localeCompare(b.date))
@@ -249,6 +65,44 @@ function buildTemporalEdges(posts) {
     edges.push({ source: sorted[i].id, target: sorted[i + 1].id, type: 'temporal' })
   }
   return edges
+}
+
+/**
+ * Create tag bridge nodes from the curated post tags.
+ * Each unique tag becomes a node that connects all posts with that tag.
+ */
+function buildTagBridgeNodes(posts) {
+  const tagPosts = new Map()
+  for (const post of posts) {
+    for (const tag of post.tags) {
+      if (!tagPosts.has(tag)) tagPosts.set(tag, [])
+      tagPosts.get(tag).push(post.id)
+    }
+  }
+
+  const nodes = []
+  const edges = []
+  let i = 0
+  for (const [tag, postIds] of tagPosts) {
+    // Only create bridge nodes for tags shared by 2+ posts
+    if (postIds.length < 2) continue
+    const bid = `tag:${tag}`
+    const angle = (i / tagPosts.size) * Math.PI * 2
+    const dist = 200 + (i % 3) * 30
+    nodes.push({
+      id: bid,
+      label: tag.toUpperCase(),
+      r: 10 + postIds.length * 2,
+      cat: tag,
+      x: 400 + Math.cos(angle) * dist,
+      y: 350 + Math.sin(angle) * dist,
+    })
+    for (const pid of postIds) {
+      edges.push({ source: bid, target: pid, type: 'tag-bridge' })
+    }
+    i++
+  }
+  return { nodes, edges }
 }
 
 function buildNodes() {
@@ -269,52 +123,24 @@ function buildNodes() {
     return { ...c, x: 400 + Math.cos(a) * 250, y: 350 + Math.sin(a) * 250 }
   })
 
-  // ── Extract bridge topic nodes from post content ──
-  const bridgeTopics = extractTopics(entries)
-  const bridgeNodes = []
-  const bridgeEdges = []
-  let bridgeIdx = 0
+  // Tag bridge nodes from curated tags
+  const { nodes: tagNodes, edges: tagBridgeEdges } = buildTagBridgeNodes(entries)
 
-  for (const [topic, postIds] of bridgeTopics) {
-    // Position bridge nodes near the centroid of connected posts
-    const bid = `topic:${topic}`
-    const angle = (bridgeIdx / bridgeTopics.size) * Math.PI * 2 + Math.PI / 3
-    const dist = 180 + (bridgeIdx % 3) * 40
-    bridgeNodes.push({
-      id: bid,
-      label: topic.toUpperCase(),
-      r: 8 + Math.min(postIds.length * 3, 10),
-      cat: 'topic',
-      x: 400 + Math.cos(angle) * dist,
-      y: 350 + Math.sin(angle) * dist,
-    })
-    for (const pid of postIds) {
-      bridgeEdges.push({ source: bid, target: pid, type: 'topic' })
-    }
-    bridgeIdx++
-  }
+  const nodes = [...cores, ...posts, ...tagNodes, ...extras]
 
-  const nodes = [...cores, ...posts, ...bridgeNodes, ...extras]
-
-  // ── Manual edges (core/concept connections) ──
   const manualLinks = EDGES.map(([s, t]) => ({ source: s, target: t, type: 'manual' }))
     .filter(l => nodes.some(n => n.id === l.source) && nodes.some(n => n.id === l.target))
 
-  // ── Auto-generated tag-shared edges ──
   const tagEdges = buildSharedTagEdges(entries)
     .filter(l => nodes.some(n => n.id === l.source) && nodes.some(n => n.id === l.target))
 
-  // ── Temporal edges ──
   const temporalEdges = buildTemporalEdges(entries)
     .filter(l => nodes.some(n => n.id === l.source) && nodes.some(n => n.id === l.target))
 
-  // ── Bridge topic edges ──
-  const topicLinks = bridgeEdges
+  const bridgeLinks = tagBridgeEdges
     .filter(l => nodes.some(n => n.id === l.source) && nodes.some(n => n.id === l.target))
 
-  // Combine all links
-  const links = [...manualLinks, ...tagEdges, ...temporalEdges, ...topicLinks]
-
+  const links = [...manualLinks, ...tagEdges, ...temporalEdges, ...bridgeLinks]
   return { nodes, links }
 }
 
@@ -334,7 +160,7 @@ const CORE_IDS = new Set(CORES.map(c => c.id))
 
 function nColor(n, th) {
   if (n.core) return th.text
-  if (n.id?.startsWith('topic:')) return '#f59e0b'
+  if (n.id?.startsWith('tag:')) return COLORS[n.cat] || th.accent
   return COLORS[n.cat] || th.textSec
 }
 
@@ -488,13 +314,13 @@ export default function Explore() {
       ctx.clearRect(0, 0, W, H)
       const th = themeRef.current
 
-      // Edges — styled by type
+      // Edges
       links.forEach(l => {
         const s = l.source, t = l.target
         if (s.x == null || t.x == null) return
         if (isFiltering) {
-          const sVis = !s.cat || activeCats.has(s.cat) || s.core || s.id?.startsWith('topic:')
-          const tVis = !t.cat || activeCats.has(t.cat) || t.core || t.id?.startsWith('topic:')
+          const sVis = !s.cat || activeCats.has(s.cat) || s.core || s.id?.startsWith('tag:')
+          const tVis = !t.cat || activeCats.has(t.cat) || t.core || t.id?.startsWith('tag:')
           if (!sVis && !tVis) return
         }
         const hi = hId && (s.id === hId || t.id === hId)
@@ -510,25 +336,22 @@ export default function Explore() {
         )
 
         if (edgeType === 'temporal') {
-          // Dotted, very subtle temporal links
           ctx.setLineDash([3, 6])
           ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.2)`
           ctx.globalAlpha = dm ? 0.03 : hi ? 0.6 : Math.max(0.08, 0.2 * alpha)
           ctx.lineWidth = 0.5
         } else if (edgeType === 'tag-shared') {
-          // Thinner, different opacity for shared-tag links
           ctx.setLineDash([])
           ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.3)`
           ctx.globalAlpha = dm ? 0.04 : hi ? 0.7 : Math.max(0.1, 0.3 * alpha)
           ctx.lineWidth = hi ? 1.2 : 0.6
-        } else if (edgeType === 'topic') {
-          // Bridge topic links — amber-tinted, medium weight
+        } else if (edgeType === 'tag-bridge') {
           ctx.setLineDash([])
-          ctx.strokeStyle = hi ? th.accent : 'rgba(245,156,11,0.35)'
+          const col = COLORS[s.cat] || COLORS[t.cat] || th.accent
+          ctx.strokeStyle = hi ? th.accent : col + '55'
           ctx.globalAlpha = dm ? 0.04 : hi ? 0.7 : Math.max(0.1, 0.35 * alpha)
           ctx.lineWidth = hi ? 1.2 : 0.6
         } else {
-          // Manual/core links — strong, solid
           ctx.setLineDash([])
           ctx.strokeStyle = hi ? th.accent : `rgba(${th.br},${th.bg2},${th.bb},0.35)`
           ctx.globalAlpha = dm ? 0.05 : hi ? 0.8 : Math.max(0.15, 0.4 * alpha)
@@ -536,7 +359,7 @@ export default function Explore() {
         }
 
         ctx.stroke()
-        ctx.setLineDash([]) // reset
+        ctx.setLineDash([])
       })
 
       // Nodes
@@ -544,7 +367,7 @@ export default function Explore() {
       const draggedId = dragRef.current?.nodeId
       nodes.forEach(n => {
         if (n.x == null) return
-        if (isFiltering && n.cat && !activeCats.has(n.cat) && !n.core && !n.id?.startsWith('topic:')) return
+        if (isFiltering && n.cat && !activeCats.has(n.cat) && !n.core && !n.id?.startsWith('tag:')) return
         const isH = hId === n.id
         const isD = draggedId === n.id
         const isC = hId ? conn.has(n.id) : true
@@ -559,20 +382,18 @@ export default function Explore() {
           ctx.fillStyle = g; ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 20, 0, Math.PI * 2); ctx.fill()
         }
 
-        // Drag glow — bright colored ring
+        // Drag glow
         if (isD) {
           const dg = ctx.createRadialGradient(n.x, n.y, n.r, n.x, n.y, n.r + 18)
           dg.addColorStop(0, col + '40'); dg.addColorStop(1, 'transparent')
           ctx.fillStyle = dg; ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 18, 0, Math.PI * 2); ctx.fill()
         }
 
-        // Circle — scale-up when dragged
         const r = isD ? n.r + 5 : isH ? n.r + 3 : n.r
         ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2)
         ctx.fillStyle = n.core ? th.bgElevated : th.bg; ctx.fill()
         ctx.strokeStyle = col; ctx.lineWidth = isD ? 3 : isH ? 2.5 : n.core ? 1.5 : 1; ctx.stroke()
 
-        // Label
         const lines = n.label.split('\n')
         const fs = n.core ? 10 : n.r > 20 ? 7.5 : 6.5
         ctx.font = `${n.core ? '600' : '400'} ${fs}px "JetBrains Mono","Fira Code",monospace`
@@ -608,18 +429,11 @@ export default function Explore() {
     return null
   }, [])
 
-  // ── Drag helpers ──────────────────────────────────────────────
-  const pendingDragRef = useRef(null)   // { nodeId, startX, startY, offsetX, offsetY }
+  // ── Drag ──
+  const pendingDragRef = useRef(null)
   const velocityRef = useRef({ vx: 0, vy: 0, lastX: 0, lastY: 0, lastT: 0 })
-  const DRAG_THRESHOLD = 4 // px before committing to drag
+  const DRAG_THRESHOLD = 4
 
-  // Get client coords from mouse or touch event
-  const clientXY = useCallback((e) => {
-    if (e.touches && e.touches.length) return { x: e.touches[0].clientX, y: e.touches[0].clientY }
-    return { x: e.clientX, y: e.clientY }
-  }, [])
-
-  // Commit a pending drag (called once threshold is crossed)
   const commitDrag = useCallback((pend) => {
     const n = dataRef.current?.nodes.find(n => n.id === pend.nodeId)
     if (!n) return
@@ -630,7 +444,6 @@ export default function Explore() {
     simRef.current?.alpha(0.6).restart()
   }, [])
 
-  // End drag — release node with momentum
   const endDrag = useCallback(() => {
     if (!dragRef.current && !pendingDragRef.current) return
     const nodeId = dragRef.current?.nodeId
@@ -647,23 +460,19 @@ export default function Explore() {
       n.vx = vel.vx; n.vy = vel.vy
       n.fx = null; n.fy = null
     }
-  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Document-level mouse move (captures drag outside canvas)
   const docMouseMove = useCallback((e) => {
     const r = canvasRef.current?.getBoundingClientRect()
     if (!r || !dataRef.current) return
     const mx = e.clientX - r.left, my = e.clientY - r.top
 
-    // Check pending drag threshold
     if (pendingDragRef.current) {
       const pend = pendingDragRef.current
       const dx = mx - pend.startX, dy = my - pend.startY
       if (dx * dx + dy * dy >= DRAG_THRESHOLD * DRAG_THRESHOLD) {
         commitDrag(pend)
-      } else {
-        return
-      }
+      } else { return }
     }
 
     if (!dragRef.current) return
@@ -673,7 +482,6 @@ export default function Explore() {
     const newFx = mx - dragRef.current.offsetX
     const newFy = my - dragRef.current.offsetY
 
-    // Track velocity
     const now = performance.now()
     const dt = now - velocityRef.current.lastT
     if (dt > 0) {
@@ -689,13 +497,11 @@ export default function Explore() {
     if (canvasRef.current) canvasRef.current.style.cursor = 'grabbing'
   }, [commitDrag])
 
-  // Document-level touch move
   const docTouchMove = useCallback((e) => {
     e.preventDefault()
     docMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY })
   }, [docMouseMove])
 
-  // Canvas mouse handlers
   const handleMouseDown = useCallback((e) => {
     const r = canvasRef.current?.getBoundingClientRect()
     if (!r || !dataRef.current) return
@@ -711,7 +517,6 @@ export default function Explore() {
     }
   }, [hitTest, docMouseMove, endDrag])
 
-  // Canvas touch handlers
   const handleTouchStart = useCallback((e) => {
     e.preventDefault()
     const r = canvasRef.current?.getBoundingClientRect()
@@ -728,11 +533,10 @@ export default function Explore() {
     }
   }, [hitTest, docTouchMove, endDrag])
 
-  // Hover / cursor (mouse only — no drag interference)
   const handleMove = useCallback((e) => {
     const r = canvasRef.current?.getBoundingClientRect()
     if (!r || !dataRef.current) return
-    if (dragRef.current) return // docMouseMove handles drag
+    if (dragRef.current) return
     const mx = e.clientX - r.left, my = e.clientY - r.top
     const f = hitTest(mx, my)
     hoveredRef.current = f?.id || null; setHovered(f?.id || null)
@@ -740,7 +544,6 @@ export default function Explore() {
   }, [hitTest])
 
   const handleMouseLeave = useCallback(() => {
-    // Don't end drag on leave — document listeners handle that
     if (!dragRef.current) {
       hoveredRef.current = null; setHovered(null)
       if (canvasRef.current) canvasRef.current.style.cursor = 'default'
@@ -758,7 +561,7 @@ export default function Explore() {
   }), [])
 
   const hNode = hovered && dataRef.current?.nodes.find(n => n.id === hovered)
-  const visCount = cats.size === 0 ? allNodes.length : allNodes.filter(n => !n.cat || cats.has(n.cat) || n.core || n.id?.startsWith('topic:')).length
+  const visCount = cats.size === 0 ? allNodes.length : allNodes.filter(n => !n.cat || cats.has(n.cat) || n.core || n.id?.startsWith('tag:')).length
 
   return (
     <div className="explore-layout">
