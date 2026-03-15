@@ -314,6 +314,16 @@ export default function Explore() {
       ctx.clearRect(0, 0, W, H)
       const th = themeRef.current
 
+      // Debug: log once
+      if (!draw._logged) {
+        draw._logged = true
+        console.log('[explore] canvas:', W, 'x', H, '| nodes:', nodes.length, '| links:', links.length, '| th.border:', th.border, '| th.accent:', th.accent)
+        links.forEach(l => {
+          const s = l.source, t = l.target
+          console.log('[explore] edge:', l.type, s.id, '->', t.id, 's.x:', s.x?.toFixed(0), 't.x:', t.x?.toFixed(0))
+        })
+      }
+
       // Edges
       links.forEach(l => {
         const s = l.source, t = l.target
