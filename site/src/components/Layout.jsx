@@ -25,7 +25,6 @@ export default function Layout({ children }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('pochiko-theme') || 'system')
   const [progress, setProgress] = useState(0)
   const [showProgress, setShowProgress] = useState(false)
-  const glowRef = useRef(null)
   const location = useLocation()
   const isPost = location.pathname.startsWith('/post/')
 
@@ -39,18 +38,6 @@ export default function Layout({ children }) {
       localStorage.setItem('pochiko-theme', theme)
     }
   }, [theme])
-
-  // Cursor glow
-  useEffect(() => {
-    const glow = glowRef.current
-    if (!glow || !window.matchMedia('(pointer: fine)').matches) return
-    const handleMove = (e) => {
-      glow.style.left = e.clientX + 'px'
-      glow.style.top = e.clientY + 'px'
-    }
-    document.addEventListener('mousemove', handleMove)
-    return () => document.removeEventListener('mousemove', handleMove)
-  }, [])
 
   // Reading progress
   useEffect(() => {
@@ -81,20 +68,7 @@ export default function Layout({ children }) {
       {/* Reading progress */}
       <div className="progress-bar" style={{ width: showProgress ? `${progress}%` : '0%', opacity: showProgress ? 1 : 0 }} />
 
-      {/* Noise texture */}
-      <div className="noise" aria-hidden="true" />
 
-      {/* Cursor glow */}
-      <div className="cursor-glow" ref={glowRef} aria-hidden="true" />
-
-      {/* Organic curves */}
-      <div className="curves" aria-hidden="true">
-        <svg viewBox="0 0 1200 800" preserveAspectRatio="none">
-          <path d="M-50 400 Q 200 200, 500 350 T 1000 250 T 1250 400" />
-          <path d="M-50 500 Q 300 350, 600 450 T 1100 350 T 1250 500" />
-          <path d="M-50 600 Q 150 500, 400 580 T 800 520 T 1250 600" />
-        </svg>
-      </div>
 
       <div className="page">
         {/* Header */}

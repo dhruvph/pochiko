@@ -164,6 +164,10 @@ function nColor(n, th) {
   return COLORS[n.cat] || th.textSec
 }
 
+// Reusable canvas for color parsing
+const _colorCanvas = document.createElement('canvas')
+const _colorCtx = _colorCanvas.getContext('2d')
+
 function getThemeColors() {
   const s = getComputedStyle(document.documentElement)
   const bgElevated = s.getPropertyValue('--bg-elevated').trim() || '#111116'
@@ -172,9 +176,8 @@ function getThemeColors() {
   const textSec = s.getPropertyValue('--text-secondary').trim() || '#8888a0'
   const border = s.getPropertyValue('--border').trim() || '#1c1c26'
   const accent = s.getPropertyValue('--accent').trim() || '#7b9bff'
-  const tmp = document.createElement('canvas').getContext('2d')
-  tmp.fillStyle = border
-  const bc = tmp.fillStyle
+  _colorCtx.fillStyle = border
+  const bc = _colorCtx.fillStyle
   const br = parseInt(bc.slice(1, 3), 16), bg2 = parseInt(bc.slice(3, 5), 16), bb = parseInt(bc.slice(5, 7), 16)
   return { bgElevated, bg, text, textSec, border, accent, br, bg2, bb }
 }
@@ -282,7 +285,9 @@ export default function Explore() {
     let prevHId = null
     let prevAlpha = -1
 
+    let running = true
     function draw() {
+      if (!running) return
       const data = dataRef.current
       if (!data) { animRef.current = requestAnimationFrame(draw); return }
       const { nodes, links } = data
@@ -296,7 +301,9 @@ export default function Explore() {
       const interacting = dragRef.current || hId
 
       if (!simActive && !interacting && hId === prevHId && alpha === prevAlpha) {
-        animRef.current = requestAnimationFrame(draw)
+        // Stop the loop — will be restarted by interaction handlers
+        running = false
+        animRef.current = null
         return
       }
       prevHId = hId
@@ -416,8 +423,20 @@ export default function Explore() {
 
       animRef.current = requestAnimationFrame(draw)
     }
+    // Expose loop starter for event handlers
+    const startLoop = () => {
+      if (!running) {
+        running = true
+        animRef.current = requestAnimationFrame(draw)
+      }
+    }
+    // Store startLoop ref for handlers
+    dataRef.current = { ...dataRef.current, startLoop }
     animRef.current = requestAnimationFrame(draw)
-    return () => { if (animRef.current) cancelAnimationFrame(animRef.current) }
+    return () => {
+      running = false
+      if (animRef.current) cancelAnimationFrame(animRef.current)
+    }
   }, [dims])
 
   const hitTest = useCallback((mx, my) => {
@@ -442,6 +461,7 @@ export default function Explore() {
     dragRef.current = { nodeId: n.id, offsetX: pend.offsetX, offsetY: pend.offsetY }
     pendingDragRef.current = null
     simRef.current?.alpha(0.6).restart()
+    dataRef.current?.startLoop?.()
   }, [])
 
   const endDrag = useCallback(() => {
@@ -494,6 +514,7 @@ export default function Explore() {
 
     n.fx = newFx; n.fy = newFy
     simRef.current?.alpha(0.6).restart()
+    dataRef.current?.startLoop?.()
     if (canvasRef.current) canvasRef.current.style.cursor = 'grabbing'
   }, [commitDrag])
 
@@ -539,7 +560,11 @@ export default function Explore() {
     if (dragRef.current) return
     const mx = e.clientX - r.left, my = e.clientY - r.top
     const f = hitTest(mx, my)
-    hoveredRef.current = f?.id || null; setHovered(f?.id || null)
+    const newH = f?.id || null
+    if (newH !== hoveredRef.current) {
+      hoveredRef.current = newH; setHovered(newH)
+      dataRef.current?.startLoop?.()
+    }
     canvasRef.current.style.cursor = f?.date ? 'pointer' : 'default'
   }, [hitTest])
 
@@ -547,6 +572,7 @@ export default function Explore() {
     if (!dragRef.current) {
       hoveredRef.current = null; setHovered(null)
       if (canvasRef.current) canvasRef.current.style.cursor = 'default'
+      dataRef.current?.startLoop?.()
     }
   }, [])
 
