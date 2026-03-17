@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
 <style>
   :root {
+    /* Dark (default) */
     --bg: #0a0a0f;
     --surface: #12121a;
     --border: #1e1e2e;
@@ -23,6 +24,32 @@
     --cyan: #22d3ee;
     --blue: #60a5fa;
     --yellow: #facc15;
+    /* Cytoscape theme vars */
+    --cy-edge: #2a2a3a;
+    --cy-edge-label: #4a4a5a;
+    --cy-node-text: #c8c8d8;
+    --cy-highlight: #7c6ff7;
+  }
+
+  [data-theme="light"] {
+    --bg: #f8f8fc;
+    --surface: #ffffff;
+    --border: #e0e0e8;
+    --text: #1a1a2e;
+    --text-dim: #6a6a80;
+    --accent: #6c5ce7;
+    --accent-glow: rgba(108,92,231,0.1);
+    --green: #22c55e;
+    --pink: #ec4899;
+    --orange: #f97316;
+    --cyan: #06b6d4;
+    --blue: #3b82f6;
+    --yellow: #eab308;
+    /* Cytoscape theme vars */
+    --cy-edge: #c0c0d0;
+    --cy-edge-label: #8888a0;
+    --cy-node-text: #1a1a2e;
+    --cy-highlight: #6c5ce7;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -544,6 +571,7 @@
 <div id="app" style="display:none">
   <header role="banner">
     <h1>🧠 <span>Memory</span> Graph</h1>
+    <button id="theme-toggle" aria-label="Toggle theme" style="background:none;border:1px solid var(--border);color:var(--text);border-radius:6px;width:36px;height:36px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background 0.15s">🌙</button>
     <input type="text" id="search" placeholder="Search nodes..." aria-label="Search nodes">
     <div class="filters">
       <button class="filter-btn active" data-group="all" aria-pressed="true">All</button>
@@ -598,6 +626,19 @@
     systems: '#94a3b8',
   };
 
+  var GROUP_COLORS_LIGHT = {
+    people: '#6c5ce7',
+    self: '#8b5cf6',
+    projects: '#16a34a',
+    tools: '#2563eb',
+    concepts: '#db2777',
+    locations: '#ea580c',
+    infrastructure: '#0891b2',
+    domains: '#ca8a04',
+    books: '#c026d3',
+    systems: '#64748b',
+  };
+
   var DEFAULT_GROUP_COLOR = '#7a7a96';
 
   var cy = null;
@@ -605,6 +646,30 @@
   var graphData = null;
   var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var isMobile = window.innerWidth <= 768;
+
+  // --- Theme helpers ---
+  function getThemeColors() {
+    var style = getComputedStyle(document.documentElement);
+    return {
+      edge: style.getPropertyValue('--cy-edge').trim(),
+      edgeLabel: style.getPropertyValue('--cy-edge-label').trim(),
+      nodeText: style.getPropertyValue('--cy-node-text').trim(),
+      highlight: style.getPropertyValue('--cy-highlight').trim(),
+    };
+  }
+
+  function isLightTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'light';
+  }
+
+  function getGroupColors() {
+    return isLightTheme() ? GROUP_COLORS_LIGHT : GROUP_COLORS;
+  }
+
+  function getGroupColor(group) {
+    var colors = getGroupColors();
+    return colors[group] || DEFAULT_GROUP_COLOR;
+  }
 
   // --- Fetch & Loading ---
 
@@ -680,6 +745,8 @@
       return;
     }
 
+    var themeColors = getThemeColors();
+
     cy = cytoscape({
       container: document.getElementById('cy'),
       elements: elements,
@@ -689,9 +756,9 @@
           style: {
             'label': 'data(label)',
             'background-color': function(ele) {
-              return GROUP_COLORS[ele.data('group')] || DEFAULT_GROUP_COLOR;
+              return getGroupColor(ele.data('group'));
             },
-            'color': '#c8c8d8',
+            'color': themeColors.nodeText,
             'font-size': '10px',
             'font-family': '-apple-system, BlinkMacSystemFont, DM Sans, sans-serif',
             'text-valign': 'bottom',
@@ -714,7 +781,7 @@
             },
             'border-width': 2,
             'border-color': function(ele) {
-              return GROUP_COLORS[ele.data('group')] || DEFAULT_GROUP_COLOR;
+              return getGroupColor(ele.data('group'));
             },
             'border-opacity': 0.5,
             'overlay-opacity': 0,
@@ -731,14 +798,14 @@
           selector: 'edge',
           style: {
             'width': 1.5,
-            'line-color': '#2a2a3a',
-            'target-arrow-color': '#2a2a3a',
+            'line-color': themeColors.edge,
+            'target-arrow-color': themeColors.edge,
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
             'arrow-scale': 0.8,
             'label': 'data(label)',
             'font-size': '8px',
-            'color': '#4a4a5a',
+            'color': themeColors.edgeLabel,
             'text-rotation': 'autorotate',
             'text-margin-y': -6,
             'text-opacity': 0,
@@ -747,8 +814,8 @@
         {
           selector: 'edge.highlighted',
           style: {
-            'line-color': '#7c6ff7',
-            'target-arrow-color': '#7c6ff7',
+            'line-color': themeColors.highlight,
+            'target-arrow-color': themeColors.highlight,
             'width': 2.5,
             'text-opacity': 1,
           }
@@ -810,7 +877,7 @@
   function showDetail(node) {
     var data = node.data();
     var panel = document.getElementById('detail-panel');
-    var groupColor = GROUP_COLORS[data.group] || DEFAULT_GROUP_COLOR;
+    var groupColor = getGroupColor(data.group);
 
     // Build connections list
     var connected = [];
@@ -905,7 +972,7 @@
 
       var dot = document.createElement('div');
       dot.className = 'conn-dot';
-      dot.style.background = GROUP_COLORS[c.group] || DEFAULT_GROUP_COLOR;
+      dot.style.background = getGroupColor(c.group);
 
       var label = document.createElement('span');
       label.className = 'conn-label';
@@ -1157,6 +1224,34 @@
     });
   }
 
+  // --- Theme Toggle ---
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('pochiko-theme', theme);
+    var btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = theme === 'light' ? '🌙' : '☀️';
+    // Rebuild Cytoscape with new colors if graph is loaded
+    if (cy && graphData) {
+      var pan = cy.pan();
+      var zoom = cy.zoom();
+      cy.destroy();
+      cy = null;
+      initGraph(graphData);
+      cy.ready(function() {
+        cy.viewport({ zoom: zoom, pan: pan });
+      });
+    }
+  }
+
+  function initTheme() {
+    var saved = localStorage.getItem('pochiko-theme');
+    var theme = saved === 'light' ? 'light' : 'dark';
+    setTheme(theme);
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      setTheme(isLightTheme() ? 'dark' : 'light');
+    });
+  }
+
   // --- Bootstrap ---
   function loadGraph() {
     showLoading();
@@ -1164,6 +1259,7 @@
     setupKeyboard();
     setupZoomControls();
     setupFilters();
+    initTheme();
 
     fetch('./graph-data.json')
       .then(function(r) {
