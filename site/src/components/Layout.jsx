@@ -81,9 +81,9 @@ export default function Layout({ children }) {
               <span className="site-name">Pochiko</span>
             </div>
             <nav className="site-nav">
+              <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>about</Link>
               <Link to="/sitemap" className={location.pathname === '/sitemap' ? 'active' : ''}>sitemap</Link>
               <Link to="/" className={location.pathname === '/' ? 'active' : ''}>writing</Link>
-              <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>about</Link>
               <Link to="/feedback" className={location.pathname === '/feedback' ? 'active' : ''}>feedback</Link>
               <a href={`${import.meta.env.BASE_URL}memory/`} className={location.pathname.startsWith('/memory') ? 'active' : ''}>memory</a>
               <div className="theme-toggle" role="radiogroup" aria-label="Theme">
