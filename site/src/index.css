@@ -685,6 +685,89 @@ a { color: inherit; }
 .manifesto p:last-child { margin-bottom: 0 !important; }
 
 /* ═══════════════════════════════════════════
+   Feedback
+   ═══════════════════════════════════════════ */
+
+.feedback-textarea {
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.feedback-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.feedback-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.feedback-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.feedback-submit {
+  padding: 0.5rem 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.feedback-submit:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.feedback-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.feedback-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.feedback-thanks p {
+  font-size: 1.125rem;
+  margin-bottom: var(--space-md);
+}
+
+.feedback-again {
+  padding: 0.5rem 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.feedback-again:hover {
+  border-color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════
    Footer
    ═══════════════════════════════════════════ */
 
