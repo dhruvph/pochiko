@@ -39,11 +39,16 @@ def load_ontology(path):
     relations = []
 
     with open(path) as f:
-        for line in f:
+        for line_num, line in enumerate(f, 1):
             line = line.strip()
             if not line:
                 continue
-            entry = json.loads(line)
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError as e:
+                print(f"Warning: skipping malformed line {line_num}: {e}", file=sys.stderr)
+                continue
+
             op = entry.get("op")
 
             if op == "create":
@@ -64,6 +69,12 @@ def load_ontology(path):
                     entities[eid]["properties"].update(ent.get("properties", {}))
                 else:
                     entities[eid] = ent
+
+            elif op == "delete":
+                eid = entry.get("id") or entry.get("entity", {}).get("id")
+                if eid:
+                    entities.pop(eid, None)
+                    relations = [r for r in relations if r["from"] != eid and r["to"] != eid]
 
     return entities, relations
 
@@ -89,6 +100,7 @@ def convert_to_cytoscape(entities, relations):
             "group": group,
             "url": props.get("url"),
             "status": props.get("status"),
+            "description": props.get("notes"),
         })
         seen_ids.add(eid)
 
@@ -104,13 +116,26 @@ def convert_to_cytoscape(entities, relations):
                 })
                 seen_ids.add(ref_id)
 
+    # Edge deduplication
+    seen_edges = set()
     edges = []
     for rel in relations:
-        edges.append({
-            "source": rel["from"],
-            "target": rel["to"],
-            "label": rel["rel"].replace("_", " "),
-        })
+        key = (rel["from"], rel["to"], rel["rel"])
+        if key not in seen_edges:
+            seen_edges.add(key)
+            edges.append({
+                "source": rel["from"],
+                "target": rel["to"],
+                "label": rel["rel"].replace("_", " "),
+            })
+
+    # Compute node degree (count of connected edges)
+    degree_map = {}
+    for edge in edges:
+        degree_map[edge["source"]] = degree_map.get(edge["source"], 0) + 1
+        degree_map[edge["target"]] = degree_map.get(edge["target"], 0) + 1
+    for node in nodes:
+        node["degree"] = degree_map.get(node["id"], 0)
 
     return {"nodes": nodes, "edges": edges}
 

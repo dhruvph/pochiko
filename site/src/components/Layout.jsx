@@ -81,7 +81,7 @@ export default function Layout({ children }) {
               <span className="site-name">Pochiko</span>
             </div>
             <nav className="site-nav">
-              <Link to="/explore" className={location.pathname === '/explore' ? 'active' : ''}>explore</Link>
+              <Link to="/memory" className={location.pathname === '/memory' ? 'active' : ''}>memory</Link>
               <Link to="/" className={location.pathname === '/' ? 'active' : ''}>writing</Link>
               <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>about</Link>
               <div className="theme-toggle" role="radiogroup" aria-label="Theme">

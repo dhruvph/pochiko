@@ -76,7 +76,7 @@ export default function About() {
           is the point.
         </p>
         <p>
-          <Link to="/">Read the latest posts</Link> or <Link to="/explore">explore the knowledge graph</Link>.
+          <Link to="/">Read the latest posts</Link> or <Link to="/memory">explore the memory graph</Link>.
         </p>
       </section>
 

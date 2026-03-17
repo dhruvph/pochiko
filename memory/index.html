@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 Pochiko's Memory Graph</title>
+<script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #c8c8d8;
+    --text-dim: #7a7a96;
+    --accent: #7c6ff7;
+    --accent-glow: rgba(124,111,247,0.15);
+    --green: #4ade80;
+    --pink: #f472b6;
+    --orange: #fb923c;
+    --cyan: #22d3ee;
+    --blue: #60a5fa;
+    --yellow: #facc15;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* Skip link */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    font-size: 13px;
+    text-decoration: none;
+    border-radius: 0 0 6px 0;
+    transition: top 0.2s;
+  }
+  .skip-link:focus { top: 0; }
+
+  #app {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: 56px 1fr;
+    height: 100vh;
+  }
+
+  /* Header */
+  header[role="banner"] {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  header h1 span { color: var(--accent); }
+
+  /* Search */
+  #search {
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 12px;
+    font-family: inherit;
+    width: 180px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--text-dim); }
+
+  .filters {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .filter-btn {
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .filter-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Graph */
+  #cy {
+    background: var(--bg);
+    position: relative;
+  }
+
+  #cy::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, var(--accent-glow), transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(96,165,250,0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Loading / Error states */
+  .loading-state, .error-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    text-align: center;
+    gap: 12px;
+    z-index: 5;
+    background: var(--bg);
+  }
+  .loading-state .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Zoom controls */
+  #zoom-controls {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+  }
+  #zoom-controls button {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  #zoom-controls button:hover { background: var(--border); }
+  #zoom-controls button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Stats bar */
+  #stats-bar {
+    display: flex;
+    gap: 16px;
+    padding: 12px 24px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    justify-content: center;
+  }
+  .stat { text-align: center; flex: 1; }
+  .stat-num { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Detail panel */
+  #detail-panel {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    padding: 24px;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .panel-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .panel-close:hover { color: var(--text); border-color: var(--text-dim); }
+  .panel-close:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  #detail-panel h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+
+  #detail-panel .type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+  }
+
+  .type-person .type-badge { background: rgba(124,111,247,0.2); color: var(--accent); }
+  .type-project .type-badge { background: rgba(74,222,128,0.15); color: var(--green); }
+  .type-account .type-badge { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .type-concept .type-badge { background: rgba(244,114,182,0.15); color: var(--pink); }
+  .type-location .type-badge { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .type-infrastructure .type-badge { background: rgba(34,211,238,0.15); color: var(--cyan); }
+  .type-domain .type-badge { background: rgba(250,204,21,0.15); color: var(--yellow); }
+  .type-self .type-badge { background: rgba(124,111,247,0.25); color: var(--accent); }
+  .type-device .type-badge { background: rgba(34,211,238,0.15); color: var(--cyan); }
+  .type-credential .type-badge { background: rgba(96,165,250,0.15); color: var(--blue); }
+
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 8px;
+    background: rgba(74,222,128,0.15);
+    color: var(--green);
+  }
+
+  .node-description {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .node-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-size: 13px;
+    text-decoration: none;
+    margin-bottom: 16px;
+    transition: opacity 0.15s;
+  }
+  .node-link:hover { opacity: 0.8; }
+
+  .connections-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin: 20px 0 10px;
+  }
+
+  .connection-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  .connection-item:hover { color: var(--accent); }
+  .connection-item:last-child { border-bottom: none; }
+  .connection-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .conn-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .conn-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    min-width: 80px;
+  }
+
+  .conn-name { font-size: 13px; }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-dim);
+    text-align: center;
+    gap: 8px;
+  }
+
+  .empty-state .icon { font-size: 40px; opacity: 0.5; }
+  .empty-state p { font-size: 13px; max-width: 200px; line-height: 1.5; }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    #app {
+      grid-template-columns: 1fr;
+      grid-template-rows: 56px 1fr auto;
+    }
+
+    header[role="banner"] {
+      flex-wrap: wrap;
+      padding: 0 12px;
+      gap: 8px;
+    }
+
+    header h1 { font-size: 14px; }
+
+    #search { width: 120px; }
+
+    .filters {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      order: 3;
+      width: 100%;
+      padding-bottom: 8px;
+    }
+    .filters::-webkit-scrollbar { display: none; }
+    .filter-btn { flex-shrink: 0; }
+
+    #detail-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 50vh;
+      border-left: none;
+      border-top: 1px solid var(--border);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      z-index: 100;
+      border-radius: 16px 16px 0 0;
+    }
+
+    #detail-panel.open {
+      transform: translateY(0);
+    }
+
+    #stats-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      transition: transform 0.3s ease;
+    }
+
+    #stats-bar.shifted {
+      transform: translateY(-50vh);
+    }
+
+    #zoom-controls { bottom: 80px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) and (max-width: 768px) {
+    #detail-panel {
+      transition: none;
+    }
+    #stats-bar {
+      transition: none;
+    }
+  }
+</style>
+</head>
+<body>
+<a href="#detail-panel" class="skip-link">Skip to details</a>
+<div id="app">
+  <header role="banner">
+    <h1>🧠 <span>Memory</span> Graph</h1>
+    <input type="text" id="search" placeholder="Search nodes..." aria-label="Search nodes">
+    <div class="filters">
+      <button class="filter-btn active" data-group="all" aria-pressed="true">All</button>
+      <button class="filter-btn" data-group="people" aria-pressed="false">People</button>
+      <button class="filter-btn" data-group="projects" aria-pressed="false">Projects</button>
+      <button class="filter-btn" data-group="tools" aria-pressed="false">Tools</button>
+      <button class="filter-btn" data-group="concepts" aria-pressed="false">Concepts</button>
+      <button class="filter-btn" data-group="infrastructure" aria-pressed="false">Infra</button>
+      <button class="filter-btn" data-group="domains" aria-pressed="false">Domains</button>
+    </div>
+  </header>
+  <div id="cy" role="img" aria-label="Knowledge graph visualization">
+    <div id="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading memory graph...</p>
+    </div>
+  </div>
+  <div id="detail-panel" role="complementary" aria-label="Node details">
+    <button class="panel-close" aria-label="Close panel">✕</button>
+    <div class="empty-state">
+      <div class="icon">🔍</div>
+      <p>Click a node to explore its connections</p>
+    </div>
+  </div>
+  <div id="stats-bar">
+    <div class="stat"><div class="stat-num" id="stat-nodes">-</div><div class="stat-label">Nodes</div></div>
+    <div class="stat"><div class="stat-num" id="stat-edges">-</div><div class="stat-label">Edges</div></div>
+    <div class="stat"><div class="stat-num" id="stat-groups">-</div><div class="stat-label">Groups</div></div>
+  </div>
+  <div id="zoom-controls">
+    <button aria-label="Zoom in" id="zoom-in">+</button>
+    <button aria-label="Zoom out" id="zoom-out">−</button>
+    <button aria-label="Fit to view" id="zoom-fit">⊡</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var GROUP_COLORS = {
+    people: '#7c6ff7',
+    self: '#a78bfa',
+    projects: '#4ade80',
+    tools: '#60a5fa',
+    concepts: '#f472b6',
+    locations: '#fb923c',
+    infrastructure: '#22d3ee',
+    domains: '#facc15',
+    books: '#e879f9',
+    systems: '#94a3b8',
+  };
+
+  var DEFAULT_GROUP_COLOR = '#7a7a96';
+
+  var cy = null;
+  var currentFilter = 'all';
+  var graphData = null;
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isMobile = window.innerWidth <= 768;
+
+  // --- Fetch & Loading ---
+
+  function showLoading() {
+    var el = document.getElementById('loading');
+    if (el) el.style.display = 'flex';
+  }
+
+  function showError(msg) {
+    var cyEl = document.getElementById('cy');
+    var loading = document.getElementById('loading');
+    if (loading) loading.remove();
+    var errDiv = document.createElement('div');
+    errDiv.className = 'error-state';
+    var icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.textContent = '❌';
+    var p = document.createElement('p');
+    p.textContent = msg;
+    errDiv.appendChild(icon);
+    errDiv.appendChild(p);
+    cyEl.appendChild(errDiv);
+  }
+
+  function hideLoading() {
+    var el = document.getElementById('loading');
+    if (el) el.remove();
+  }
+
+  // --- Stats ---
+
+  function updateStats(data) {
+    document.getElementById('stat-nodes').textContent = data.nodes.length;
+    document.getElementById('stat-edges').textContent = data.edges.length;
+    document.getElementById('stat-groups').textContent = new Set(data.nodes.map(function(n) { return n.group; })).size;
+  }
+
+  // --- Init Graph ---
+
+  function initGraph(data) {
+    graphData = data;
+
+    var elements = [];
+
+    data.nodes.forEach(function(n) {
+      elements.push({
+        data: {
+          id: n.id,
+          label: n.label,
+          group: n.group,
+          type: n.type,
+          url: n.url || null,
+          notes: n.notes || null,
+          status: n.status || null,
+          degree: 0 // computed after
+        }
+      });
+    });
+
+    data.edges.forEach(function(e) {
+      elements.push({
+        data: {
+          id: e.source + '-' + e.target,
+          source: e.source,
+          target: e.target,
+          label: e.label
+        }
+      });
+    });
+
+    cy = cytoscape({
+      container: document.getElementById('cy'),
+      elements: elements,
+      style: [
+        {
+          selector: 'node',
+          style: {
+            'label': 'data(label)',
+            'background-color': function(ele) {
+              return GROUP_COLORS[ele.data('group')] || DEFAULT_GROUP_COLOR;
+            },
+            'color': '#c8c8d8',
+            'font-size': '10px',
+            'font-family': '-apple-system, BlinkMacSystemFont, DM Sans, sans-serif',
+            'text-valign': 'bottom',
+            'text-margin-y': 6,
+            'width': function(ele) {
+              var base = ele.data('group') === 'self' ? 36 : 24;
+              var degree = ele.degree();
+              if (isMobile) {
+                base = ele.data('group') === 'self' ? 48 : 36;
+              }
+              return base + Math.min(degree * 2, 20);
+            },
+            'height': function(ele) {
+              var base = ele.data('group') === 'self' ? 36 : 24;
+              var degree = ele.degree();
+              if (isMobile) {
+                base = ele.data('group') === 'self' ? 48 : 36;
+              }
+              return base + Math.min(degree * 2, 20);
+            },
+            'border-width': 2,
+            'border-color': function(ele) {
+              return GROUP_COLORS[ele.data('group')] || DEFAULT_GROUP_COLOR;
+            },
+            'border-opacity': 0.5,
+            'overlay-opacity': 0,
+          }
+        },
+        {
+          selector: 'node:hover',
+          style: {
+            'border-width': 3,
+            'border-opacity': 0.8,
+          }
+        },
+        {
+          selector: 'edge',
+          style: {
+            'width': 1.5,
+            'line-color': '#2a2a3a',
+            'target-arrow-color': '#2a2a3a',
+            'target-arrow-shape': 'triangle',
+            'curve-style': 'bezier',
+            'arrow-scale': 0.8,
+            'label': 'data(label)',
+            'font-size': '8px',
+            'color': '#4a4a5a',
+            'text-rotation': 'autorotate',
+            'text-margin-y': -6,
+            'text-opacity': 0,
+          }
+        },
+        {
+          selector: 'edge.highlighted',
+          style: {
+            'line-color': '#7c6ff7',
+            'target-arrow-color': '#7c6ff7',
+            'width': 2.5,
+            'text-opacity': 1,
+          }
+        },
+        {
+          selector: 'node:selected',
+          style: {
+            'border-width': 3,
+            'border-opacity': 1,
+          }
+        },
+        {
+          selector: '.dimmed',
+          style: {
+            'opacity': 0.15,
+          }
+        }
+      ],
+      layout: {
+        name: 'cose',
+        animate: !prefersReducedMotion,
+        nodeRepulsion: 8000,
+        idealEdgeLength: 80,
+        edgeElasticity: 100,
+        nestingFactor: 1.2,
+        gravity: 0.8,
+        numIter: 1000,
+      },
+      minZoom: 0.3,
+      maxZoom: 3,
+      wheelSensitivity: 0.3,
+    });
+
+    // Fit after layout
+    cy.on('layoutstop', function() {
+      cy.fit(undefined, 50);
+    });
+
+    // Node click → show detail panel
+    cy.on('tap', 'node', function(evt) {
+      var node = evt.target;
+      showDetail(node);
+      highlightConnections(node);
+    });
+
+    cy.on('tap', function(evt) {
+      if (evt.target === cy) {
+        clearHighlight();
+        showEmpty();
+      }
+    });
+
+    updateStats(data);
+  }
+
+  // --- Detail Panel ---
+
+  function showDetail(node) {
+    var data = node.data();
+    var panel = document.getElementById('detail-panel');
+    var groupColor = GROUP_COLORS[data.group] || DEFAULT_GROUP_COLOR;
+
+    // Build connections list
+    var connected = [];
+    node.connectedEdges().forEach(function(edge) {
+      var other = edge.source().id() === data.id ? edge.target() : edge.source();
+      connected.push({
+        name: other.data('label'),
+        id: other.id(),
+        group: other.data('group'),
+        label: edge.data('label'),
+        direction: edge.source().id() === data.id ? 'out' : 'in',
+      });
+    });
+
+    // Sort: outgoing first
+    connected.sort(function(a, b) {
+      return (a.direction === 'out' ? -1 : 1);
+    });
+
+    // Build panel content safely (no innerHTML with user data)
+    panel.className = 'type-' + data.group;
+    while (panel.firstChild) panel.removeChild(panel.firstChild);
+
+    // Close button
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'panel-close';
+    closeBtn.setAttribute('aria-label', 'Close details');
+    closeBtn.textContent = '\u2715';
+    closeBtn.addEventListener('click', function() {
+      clearHighlight();
+      showEmpty();
+    });
+    panel.appendChild(closeBtn);
+
+    // Title
+    var h2 = document.createElement('h2');
+    h2.textContent = data.label;
+    panel.appendChild(h2);
+
+    // Type badge + status
+    var badgeContainer = document.createElement('div');
+    var typeBadge = document.createElement('span');
+    typeBadge.className = 'type-badge';
+    typeBadge.style.background = groupColor + '22';
+    typeBadge.style.color = groupColor;
+    typeBadge.textContent = data.group;
+    badgeContainer.appendChild(typeBadge);
+
+    if (data.status) {
+      var statusBadge = document.createElement('span');
+      statusBadge.className = 'status-badge';
+      statusBadge.textContent = data.status;
+      badgeContainer.appendChild(statusBadge);
+    }
+    panel.appendChild(badgeContainer);
+
+    // Description / notes
+    if (data.notes) {
+      var desc = document.createElement('p');
+      desc.className = 'node-description';
+      desc.textContent = data.notes;
+      panel.appendChild(desc);
+    }
+
+    // URL link
+    if (data.url) {
+      var link = document.createElement('a');
+      link.className = 'node-link';
+      link.href = data.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = '\u2197 Open';
+      panel.appendChild(link);
+    }
+
+    // Connections title
+    var connTitle = document.createElement('div');
+    connTitle.className = 'connections-title';
+    connTitle.textContent = 'Connections (' + connected.length + ')';
+    panel.appendChild(connTitle);
+
+    // Connection items
+    connected.forEach(function(c) {
+      var item = document.createElement('div');
+      item.className = 'connection-item';
+      item.setAttribute('tabindex', '0');
+      item.setAttribute('role', 'button');
+      item.setAttribute('aria-label', c.direction === 'out' ? c.label + ' ' + c.name : c.name + ' ' + c.label);
+      item.dataset.nodeId = c.id;
+
+      var dot = document.createElement('div');
+      dot.className = 'conn-dot';
+      dot.style.background = GROUP_COLORS[c.group] || DEFAULT_GROUP_COLOR;
+
+      var label = document.createElement('span');
+      label.className = 'conn-label';
+      label.textContent = c.direction === 'out' ? '\u2192 ' + c.label : '\u2190 ' + c.label;
+
+      var name = document.createElement('span');
+      name.className = 'conn-name';
+      name.textContent = c.name;
+
+      item.appendChild(dot);
+      item.appendChild(label);
+      item.appendChild(name);
+
+      // Click handler
+      item.addEventListener('click', function() {
+        var targetNode = cy.getElementById(c.id);
+        if (targetNode && targetNode.length > 0) {
+          cy.nodes().unselect();
+          targetNode.select();
+          showDetail(targetNode);
+          highlightConnections(targetNode);
+        }
+      });
+
+      // Keyboard handler
+      item.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.click();
+        }
+      });
+
+      panel.appendChild(item);
+    });
+
+    // Mobile: open panel
+    if (isMobile) {
+      panel.classList.add('open');
+      var statsBar = document.getElementById('stats-bar');
+      if (statsBar) statsBar.classList.add('shifted');
+    }
+  }
+
+  function showEmpty() {
+    var panel = document.getElementById('detail-panel');
+    panel.className = '';
+    while (panel.firstChild) panel.removeChild(panel.firstChild);
+
+    var emptyDiv = document.createElement('div');
+    emptyDiv.className = 'empty-state';
+
+    var icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.textContent = '\uD83D\uDD0D';
+
+    var p = document.createElement('p');
+    p.textContent = 'Click a node to explore its connections';
+
+    emptyDiv.appendChild(icon);
+    emptyDiv.appendChild(p);
+    panel.appendChild(emptyDiv);
+
+    // Mobile: close panel
+    if (isMobile) {
+      panel.classList.remove('open');
+      var statsBar = document.getElementById('stats-bar');
+      if (statsBar) statsBar.classList.remove('shifted');
+    }
+  }
+
+  // --- Highlighting ---
+
+  function highlightConnections(node) {
+    cy.elements().removeClass('highlighted dimmed');
+    var connected = node.closedNeighborhood();
+    cy.elements().not(connected).addClass('dimmed');
+    node.connectedEdges().addClass('highlighted');
+  }
+
+  function clearHighlight() {
+    cy.elements().removeClass('highlighted dimmed');
+  }
+
+  // --- Filtered Stats ---
+
+  function getFilteredData() {
+    if (!graphData) return { nodes: [], edges: [] };
+    if (currentFilter === 'all') return graphData;
+    var filteredNodes = graphData.nodes.filter(function(n) { return n.group === currentFilter; });
+    var nodeIds = new Set(filteredNodes.map(function(n) { return n.id; }));
+    var filteredEdges = graphData.edges.filter(function(e) { return nodeIds.has(e.source) && nodeIds.has(e.target); });
+    return { nodes: filteredNodes, edges: filteredEdges };
+  }
+
+  // --- Filters ---
+
+  function applyFilter(group) {
+    cy.elements().removeClass('dimmed highlighted');
+    cy.elements().style('display', 'element');
+
+    if (group === 'all') {
+      return;
+    }
+
+    cy.nodes().forEach(function(n) {
+      if (n.data('group') !== group) {
+        n.style('display', 'none');
+      }
+    });
+
+    cy.edges().forEach(function(e) {
+      var srcVis = e.source().style('display') !== 'none';
+      var tgtVis = e.target().style('display') !== 'none';
+      e.style('display', (srcVis && tgtVis) ? 'element' : 'none');
+    });
+  }
+
+  // --- Search ---
+
+  function setupSearch() {
+    var searchInput = document.getElementById('search');
+    var debounceTimer = null;
+
+    searchInput.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(function() {
+        var q = searchInput.value.toLowerCase().trim();
+        if (!q) {
+          cy.nodes().removeClass('dimmed');
+          cy.edges().removeClass('dimmed');
+          applyFilter(currentFilter);
+          return;
+        }
+
+        cy.elements().removeClass('highlighted dimmed');
+        cy.nodes().forEach(function(n) {
+          if (n.data('label').toLowerCase().includes(q)) {
+            n.removeClass('dimmed').style('display', 'element');
+          } else {
+            n.addClass('dimmed');
+          }
+        });
+      }, 200);
+    });
+  }
+
+  // --- Keyboard ---
+
+  function setupKeyboard() {
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        // Clear search
+        var searchInput = document.getElementById('search');
+        if (document.activeElement === searchInput) {
+          searchInput.value = '';
+          searchInput.blur();
+          cy.nodes().removeClass('dimmed');
+          cy.edges().removeClass('dimmed');
+          applyFilter(currentFilter);
+          return;
+        }
+        // Deselect node
+        cy.nodes().unselect();
+        clearHighlight();
+        showEmpty();
+      }
+    });
+  }
+
+  // --- Zoom Controls ---
+
+  function setupZoomControls() {
+    document.getElementById('zoom-in').addEventListener('click', function() {
+      if (cy) cy.zoom({ level: cy.zoom() * 1.3, position: { x: cy.width() / 2, y: cy.height() / 2 } });
+    });
+    document.getElementById('zoom-out').addEventListener('click', function() {
+      if (cy) cy.zoom({ level: cy.zoom() / 1.3, position: { x: cy.width() / 2, y: cy.height() / 2 } });
+    });
+    document.getElementById('zoom-fit').addEventListener('click', function() {
+      if (cy) cy.fit(undefined, 50);
+    });
+  }
+
+  // --- Filter Buttons ---
+
+  function setupFilters() {
+    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(function(b) {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        currentFilter = btn.dataset.group;
+        applyFilter(currentFilter);
+        updateStats(getFilteredData());
+      });
+    });
+  }
+
+  // --- Bootstrap ---
+
+  showLoading();
+  setupSearch();
+  setupKeyboard();
+  setupZoomControls();
+  setupFilters();
+
+  fetch('./graph-data.json')
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      if (!data.nodes || !data.nodes.length) {
+        throw new Error('Empty graph data');
+      }
+      hideLoading();
+      initGraph(data);
+    })
+    .catch(function(err) {
+      showError('Failed to load graph: ' + err.message);
+    });
+
+})();
+</script>
+</body>
+</html>

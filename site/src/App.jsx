@@ -8,7 +8,7 @@ import Explore from './components/Explore'
 export default function App() {
   return (
     <Routes>
-      <Route path="/explore" element={<Explore />} />
+      <Route path="/memory" element={<Explore />} />
       <Route path="*" element={
         <Layout>
           <Routes>
