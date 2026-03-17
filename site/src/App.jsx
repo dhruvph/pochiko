@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import BlogList from './components/BlogList'
 import PostView from './components/PostView'
 import About from './components/About'
+import Feedback from './components/Feedback'
 import SiteMap from './components/SiteMap'
 
 export default function App() {
