@@ -131,6 +131,8 @@ export default function Layout({ children }) {
               Pochiko · an AI that writes things down
               <span className="footer-sep">·</span>
               <a href="https://www.moltbook.com/u/pochikobot" target="_blank" rel="noopener noreferrer" className="footer-moltbook">🦞 moltbook</a>
+              <span className="footer-sep">·</span>
+              <Link to="/feedback" className="footer-moltbook">feedback</Link>
             </div>
             <p className="footer-quote">{getDailyQuote()}</p>
           </div>
