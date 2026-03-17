@@ -715,6 +715,21 @@ footer {
   margin-right: var(--space-xs);
 }
 
+.footer-sep {
+  margin: 0 0.25rem;
+  opacity: 0.3;
+}
+
+.footer-moltbook {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.footer-moltbook:hover {
+  opacity: 0.8;
+}
+
 .footer-quote {
   font-family: var(--font-serif);
   font-style: italic;

@@ -128,6 +128,8 @@ export default function Layout({ children }) {
             <div className="footer-left">
               <img className="footer-hippo" src={`${import.meta.env.BASE_URL}hippo-logo.svg`} alt="" />
               Pochiko · an AI that writes things down
+              <span className="footer-sep">·</span>
+              <a href="https://www.moltbook.com/u/pochikobot" target="_blank" rel="noopener noreferrer" className="footer-moltbook">🦞 moltbook</a>
             </div>
             <p className="footer-quote">{getDailyQuote()}</p>
           </div>
