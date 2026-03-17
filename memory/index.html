@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🧠 Pochiko's Memory Graph</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
 <style>
   :root {
@@ -99,7 +102,7 @@
   }
 
   .filter-btn {
-    padding: 4px 12px;
+    padding: 12px 12px;
     border-radius: 6px;
     border: 1px solid var(--border);
     background: transparent;
@@ -168,7 +171,7 @@
     z-index: 10;
   }
   #zoom-controls button {
-    width: 32px; height: 32px;
+    width: 44px; height: 44px;
     border-radius: 6px;
     border: 1px solid var(--border);
     background: var(--surface);
@@ -186,13 +189,18 @@
     outline-offset: 2px;
   }
 
-  /* Stats bar */
+  /* Stats bar - top right corner */
   #stats-bar {
+    position: absolute;
+    top: 56px;
+    right: 328px;
     display: flex;
     gap: 16px;
-    padding: 12px 24px;
+    padding: 8px 16px;
     background: var(--surface);
-    border-top: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: 0 0 8px 8px;
+    z-index: 10;
     justify-content: center;
   }
   .stat { text-align: center; flex: 1; }
@@ -216,8 +224,8 @@
     border: 1px solid var(--border);
     color: var(--text-dim);
     border-radius: 4px;
-    width: 28px;
-    height: 28px;
+    width: 44px;
+    height: 44px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
@@ -256,7 +264,6 @@
   .type-location .type-badge { background: rgba(251,146,60,0.15); color: var(--orange); }
   .type-infrastructure .type-badge { background: rgba(34,211,238,0.15); color: var(--cyan); }
   .type-domain .type-badge { background: rgba(250,204,21,0.15); color: var(--yellow); }
-  .type-self .type-badge { background: rgba(124,111,247,0.25); color: var(--accent); }
   .type-device .type-badge { background: rgba(34,211,238,0.15); color: var(--cyan); }
   .type-credential .type-badge { background: rgba(96,165,250,0.15); color: var(--blue); }
 
@@ -307,6 +314,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px 0;
+    min-height: 44px;
     border-bottom: 1px solid var(--border);
     cursor: pointer;
     transition: color 0.15s;
@@ -397,6 +405,7 @@
       transition: transform 0.3s ease;
       z-index: 100;
       border-radius: 16px 16px 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     #detail-panel.open {
@@ -405,18 +414,26 @@
 
     #stats-bar {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      top: 56px;
+      right: 8px;
+      bottom: auto;
+      left: auto;
       z-index: 99;
-      transition: transform 0.3s ease;
+      border-radius: 0 0 8px 8px;
+      transition: opacity 0.3s ease;
     }
 
     #stats-bar.shifted {
-      transform: translateY(-50vh);
+      opacity: 0;
+      pointer-events: none;
     }
 
     #zoom-controls { bottom: 80px; }
+  }
+
+  /* Very narrow screens - hide title text, keep emoji */
+  @media (max-width: 400px) {
+    header h1 span { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) and (max-width: 768px) {
@@ -445,6 +462,8 @@
     text-align: center;
     padding: 40px;
     max-width: 360px;
+    max-height: 100vh;
+    overflow-y: auto;
   }
   .gate-emoji {
     font-size: 48px;
@@ -534,6 +553,7 @@
       <button class="filter-btn" data-group="concepts" aria-pressed="false">Concepts</button>
       <button class="filter-btn" data-group="infrastructure" aria-pressed="false">Infra</button>
       <button class="filter-btn" data-group="domains" aria-pressed="false">Domains</button>
+      <button class="filter-btn" data-group="locations" aria-pressed="false">Locations</button>
     </div>
   </header>
   <div id="cy" role="img" aria-label="Knowledge graph visualization">
@@ -637,7 +657,7 @@
           group: n.group,
           type: n.type,
           url: n.url || null,
-          notes: n.notes || null,
+          description: n.description || null,
           status: n.status || null,
           degree: 0 // computed after
         }
@@ -654,6 +674,11 @@
         }
       });
     });
+
+    if (typeof cytoscape === 'undefined') {
+      showError('Cytoscape.js failed to load. Check your network connection and refresh.');
+      return;
+    }
 
     cy = cytoscape({
       container: document.getElementById('cy'),
@@ -773,6 +798,7 @@
       if (evt.target === cy) {
         clearHighlight();
         showEmpty();
+        applyFilter(currentFilter);
       }
     });
 
@@ -814,8 +840,10 @@
     closeBtn.setAttribute('aria-label', 'Close details');
     closeBtn.textContent = '\u2715';
     closeBtn.addEventListener('click', function() {
+      cy.nodes().unselect();
       clearHighlight();
       showEmpty();
+      applyFilter(currentFilter);
     });
     panel.appendChild(closeBtn);
 
@@ -842,10 +870,10 @@
     panel.appendChild(badgeContainer);
 
     // Description / notes
-    if (data.notes) {
+    if (data.description) {
       var desc = document.createElement('p');
       desc.className = 'node-description';
-      desc.textContent = data.notes;
+      desc.textContent = data.description;
       panel.appendChild(desc);
     }
 
@@ -1006,20 +1034,33 @@
       debounceTimer = setTimeout(function() {
         var q = searchInput.value.toLowerCase().trim();
         if (!q) {
-          cy.nodes().removeClass('dimmed');
-          cy.edges().removeClass('dimmed');
+          // Clear search: restore filter state cleanly
+          cy.elements().removeClass('highlighted dimmed');
           applyFilter(currentFilter);
+          updateStats(getFilteredData());
           return;
         }
 
+        // Start from filtered state — only search within visible nodes
+        applyFilter(currentFilter);
         cy.elements().removeClass('highlighted dimmed');
+
+        var matchCount = 0;
         cy.nodes().forEach(function(n) {
+          if (n.style('display') === 'none') return; // skip filtered-out nodes
           if (n.data('label').toLowerCase().includes(q)) {
-            n.removeClass('dimmed').style('display', 'element');
+            matchCount++;
           } else {
             n.addClass('dimmed');
           }
         });
+
+        // Update stats to show matching count
+        var visibleNodes = cy.nodes().filter(function(n) { return n.style('display') !== 'none'; });
+        document.getElementById('stat-nodes').textContent = matchCount + '/' + visibleNodes.length;
+        var visEdges = cy.edges().filter(function(e) { return e.style('display') !== 'none'; });
+        document.getElementById('stat-edges').textContent = visEdges.length;
+        document.getElementById('stat-groups').textContent = new Set(visibleNodes.map(function(n) { return n.data('group'); })).size;
       }, 200);
     });
   }
@@ -1043,6 +1084,7 @@
         cy.nodes().unselect();
         clearHighlight();
         showEmpty();
+        applyFilter(currentFilter);
       }
     });
   }
@@ -1129,6 +1171,22 @@
         return r.json();
       })
       .then(function(data) {
+        if (!data.nodes || !data.nodes.length) {
+          throw new Error('Empty graph data');
+        }
+        hideLoading();
+        initGraph(data);
+      })
+      .catch(function(err) {
+        showError('Failed to load graph: ' + err.message);
+      });
+  } // end loadGraph
+
+})();
+</script>
+</body>
+</html>
+nction(data) {
         if (!data.nodes || !data.nodes.length) {
           throw new Error('Empty graph data');
         }
