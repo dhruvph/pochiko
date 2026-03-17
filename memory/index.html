@@ -426,12 +426,103 @@
     #stats-bar {
       transition: none;
     }
+    #password-gate {
+      transition: none;
+    }
+  }
+
+  /* Password gate */
+  #password-gate {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  .gate-card {
+    text-align: center;
+    padding: 40px;
+    max-width: 360px;
+  }
+  .gate-emoji {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  .gate-card h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+  .gate-card p {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  #password-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #password-input:focus {
+    border-color: var(--accent);
+  }
+  #password-submit {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  #password-submit:hover { opacity: 0.9; }
+  #password-error {
+    color: var(--pink);
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 20px;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  .gate-card.shake {
+    animation: shake 0.4s ease;
   }
 </style>
 </head>
 <body>
 <a href="#detail-panel" class="skip-link">Skip to details</a>
-<div id="app">
+
+<!-- Password gate -->
+<div id="password-gate">
+  <div class="gate-card">
+    <div class="gate-emoji">🦛</div>
+    <h2>Memory Graph</h2>
+    <p>Pochiko's private knowledge graph</p>
+    <input type="password" id="password-input" placeholder="Enter password" autocomplete="off">
+    <button id="password-submit">Enter</button>
+    <div id="password-error"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
   <header role="banner">
     <h1>🧠 <span>Memory</span> Graph</h1>
     <input type="text" id="search" placeholder="Search nodes..." aria-label="Search nodes">
@@ -988,29 +1079,66 @@
     });
   }
 
-  // --- Bootstrap ---
+  // --- Password Gate ---
+  var HASH = 'f7811a6b2e5b0068604f7cae55e7a8b5acd9eb11928d215adf178800f0612110'; // SHA-256 of 'hippo2026'
 
-  showLoading();
-  setupSearch();
-  setupKeyboard();
-  setupZoomControls();
-  setupFilters();
+  async function sha256(msg) {
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+    return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
 
-  fetch('./graph-data.json')
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function(data) {
-      if (!data.nodes || !data.nodes.length) {
-        throw new Error('Empty graph data');
+  function unlockApp() {
+    document.getElementById('password-gate').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    loadGraph();
+  }
+
+  if (sessionStorage.getItem('mg_auth') === HASH) {
+    unlockApp();
+  } else {
+    document.getElementById('password-submit').addEventListener('click', async function() {
+      var pw = document.getElementById('password-input').value;
+      var h = await sha256(pw);
+      if (h === HASH) {
+        sessionStorage.setItem('mg_auth', HASH);
+        unlockApp();
+      } else {
+        document.getElementById('password-error').textContent = 'Incorrect password';
+        var card = document.querySelector('.gate-card');
+        card.classList.remove('shake');
+        void card.offsetWidth; // reflow
+        card.classList.add('shake');
       }
-      hideLoading();
-      initGraph(data);
-    })
-    .catch(function(err) {
-      showError('Failed to load graph: ' + err.message);
     });
+    document.getElementById('password-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('password-submit').click();
+    });
+  }
+
+  // --- Bootstrap ---
+  function loadGraph() {
+    showLoading();
+    setupSearch();
+    setupKeyboard();
+    setupZoomControls();
+    setupFilters();
+
+    fetch('./graph-data.json')
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function(data) {
+        if (!data.nodes || !data.nodes.length) {
+          throw new Error('Empty graph data');
+        }
+        hideLoading();
+        initGraph(data);
+      })
+      .catch(function(err) {
+        showError('Failed to load graph: ' + err.message);
+      });
+  } // end loadGraph
 
 })();
 </script>
