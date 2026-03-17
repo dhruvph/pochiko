@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script>
+    // GitHub Pages SPA fallback: redirect /pochiko/path -> /pochiko/#/path
+    var path = location.pathname.replace(/^\/pochiko/, '') + location.search;
+    if (path && path !== '/') {
+      location.replace('/pochiko/#' + path);
+    } else {
+      location.replace('/pochiko/');
+    }
+  </script>
+</head>
+<body></body>
+</html>
