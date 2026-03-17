@@ -782,7 +782,7 @@ footer {
    Explore Page (Knowledge Graph)
    ═══════════════════════════════════════════ */
 
-.explore-layout {
+.sitemap-layout {
   display: grid;
   grid-template-columns: 280px 1fr;
   height: 100vh;
@@ -792,12 +792,12 @@ footer {
   animation: pageIn 0.5s var(--ease-out);
 }
 
-.explore-layout:has(.explore-sidebar.collapsed) {
+.sitemap-layout:has(.sitemap-sidebar.collapsed) {
   grid-template-columns: 0 1fr;
 }
 
 /* ── Sidebar ── */
-.explore-sidebar {
+.sitemap-sidebar {
   border-right: 1px solid var(--border);
   padding: var(--space-lg);
   display: flex;
@@ -808,7 +808,7 @@ footer {
   transition: all 0.3s var(--ease);
 }
 
-.explore-sidebar.collapsed {
+.sitemap-sidebar.collapsed {
   padding: 0;
   border-right: none;
   width: 0;
@@ -983,14 +983,14 @@ footer {
   border-color: var(--accent);
 }
 
-.explore-sidebar.collapsed .sidebar-toggle {
+.sitemap-sidebar.collapsed .sidebar-toggle {
   position: fixed;
   left: var(--space-md);
   top: var(--space-md);
 }
 
 /* ── Graph Area ── */
-.explore-graph {
+.sitemap-graph {
   position: relative;
   display: flex;
   align-items: center;
@@ -998,12 +998,12 @@ footer {
   overflow: hidden;
 }
 
-.explore-graph canvas {
+.sitemap-graph canvas {
   width: 100%;
   height: 100%;
 }
 
-.explore-hint {
+.sitemap-hint {
   position: absolute;
   bottom: var(--space-lg);
   left: 50%;
@@ -1018,17 +1018,17 @@ footer {
 
 /* ── Explore responsive ── */
 @media (max-width: 768px) {
-  .explore-layout {
+  .sitemap-layout {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
   }
-  .explore-sidebar {
+  .sitemap-sidebar {
     border-right: none;
     border-bottom: 1px solid var(--border);
     max-height: 200px;
     padding: var(--space-md);
   }
-  .explore-sidebar.collapsed {
+  .sitemap-sidebar.collapsed {
     max-height: 0;
     padding: 0;
   }

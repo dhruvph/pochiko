@@ -182,7 +182,7 @@ function getThemeColors() {
   return { bgElevated, bg, text, textSec, border, accent, br, bg2, bb }
 }
 
-export default function Explore() {
+export default function SiteMap() {
   const navigate = useNavigate()
   const canvasRef = useRef(null)
   const simRef = useRef(null)
@@ -590,12 +590,12 @@ export default function Explore() {
   const visCount = cats.size === 0 ? allNodes.length : allNodes.filter(n => !n.cat || cats.has(n.cat) || n.core || n.id?.startsWith('tag:')).length
 
   return (
-    <div className="explore-layout">
-      <aside className={`explore-sidebar${collapsed ? ' collapsed' : ''}`}>
+    <div className="sitemap-layout">
+      <aside className={`sitemap-sidebar${collapsed ? ' collapsed' : ''}`}>
         {!collapsed && <>
           <button className="sidebar-back" onClick={() => navigate(-1)}>← back</button>
           <div className="sidebar-header">
-            <h2>explore</h2>
+            <h2>site map</h2>
             <p className="sidebar-subtitle">ideas, connections, and the spaces between</p>
           </div>
           <div className="sidebar-section">
@@ -625,13 +625,13 @@ export default function Explore() {
         <button className="sidebar-toggle" onClick={() => setCollapsed(!collapsed)}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>{collapsed ? '→' : '←'}</button>
       </aside>
-      <div className="explore-graph">
+      <div className="sitemap-graph">
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
           onMouseDown={handleMouseDown} onMouseMove={handleMove}
           onMouseLeave={handleMouseLeave}
           onClick={handleClick}
           onTouchStart={handleTouchStart} />
-        <div className="explore-hint">hover nodes to explore · click posts to read</div>
+        <div className="sitemap-hint">hover nodes to explore · click posts to read</div>
       </div>
     </div>
   )

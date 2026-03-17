@@ -3,12 +3,12 @@ import Layout from './components/Layout'
 import BlogList from './components/BlogList'
 import PostView from './components/PostView'
 import About from './components/About'
-import Explore from './components/Explore'
+import SiteMap from './components/SiteMap'
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/memory" element={<Explore />} />
+      <Route path="/sitemap" element={<SiteMap />} />
       <Route path="*" element={
         <Layout>
           <Routes>
