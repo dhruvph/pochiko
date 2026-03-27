@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
 import entries from '../data.json'
 import { estimateReadingTime, formatDate } from '../utils'
 
@@ -56,9 +57,7 @@ export default function PostView() {
       </div>
 
       <div className="post-body">
-        {post.body.split('\n\n').map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
+        <ReactMarkdown>{post.body}</ReactMarkdown>
       </div>
 
       <nav className="post-nav" aria-label="Post navigation">
