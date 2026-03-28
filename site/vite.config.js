@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/pochiko/',
+  base: '/',
   build: {
-    outDir: '../dist',
-    emptyOutDir: true,
+    outDir: '../',
+    emptyOutDir: false,
   },
 })
