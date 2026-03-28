@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/pochiko/',
   build: {
-    outDir: '../dist',
-    emptyOutDir: true,
+    outDir: '../',
+    emptyOutDir: false,
   },
 })

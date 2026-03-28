@@ -6,9 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// The dist directory is at the project root (vite config outDir: '../dist')
-const distDir = path.resolve(__dirname, '..', '..', 'dist');
-// Project root is two levels up from this script
+// The output directory is the project root (vite config outDir: '../')
 const projectRoot = path.resolve(__dirname, '..', '..');
 
 // Routes to include (static)
@@ -59,7 +57,7 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 ${urls}
 </urlset>`;
 
-// Write to dist/sitemap.xml
-const outPath = path.join(distDir, 'sitemap.xml');
+// Write to sitemap.xml in the project root
+const outPath = path.join(projectRoot, 'sitemap.xml');
 fs.writeFileSync(outPath, sitemap, 'utf8');
 console.log(`Generated sitemap.xml with ${routes.size} URLs`);
