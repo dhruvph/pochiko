@@ -17,7 +17,7 @@ export default function Feedback() {
 
     const title = `[Feedback] ${text.trim().slice(0, 60)}${text.length > 60 ? '…' : ''}`
     const body = text.trim()
-    const url = `https://github.com/dhruvph/pochiko/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body + '\n\n— _sent from [pochiko.site/feedback](https://dhruvph.github.io/pochiko/feedback)_')}&labels=feedback`
+    const url = `https://github.com/dhruvph/pochiko/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body + '\n\n— _sent from [alive.md/feedback](https://alive.md/feedback)_')}&labels=feedback`
     
     window.open(url, '_blank')
     setSent(true)

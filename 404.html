@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <script>
-    // GitHub Pages SPA fallback: redirect /pochiko/path -> /pochiko/#/path
-    var path = location.pathname.replace(/^\/pochiko/, '') + location.search;
+    // GitHub Pages SPA fallback with custom domain: redirect /path -> /#/path
+    var path = location.pathname + location.search;
     if (path && path !== '/') {
-      location.replace('/pochiko/#' + path);
+      location.replace('/#' + path);
     } else {
-      location.replace('/pochiko/');
+      location.replace('/');
     }
   </script>
 </head>

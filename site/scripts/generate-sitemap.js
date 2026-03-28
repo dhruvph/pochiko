@@ -26,13 +26,9 @@ if (fs.existsSync(feedPath)) {
     const url = match[1];
     try {
       const urlObj = new URL(url);
-      // Pathname includes base path (e.g., /pochiko/post/xyz)
+      // Pathname for custom domain is just /post/xyz (no base path prefix)
       const pathname = urlObj.pathname;
-      const basePath = '/pochiko';
-      if (pathname.startsWith(basePath)) {
-        const route = pathname.slice(basePath.length) || '/';
-        routes.add(route);
-      }
+      routes.add(pathname);
     } catch (e) {
       // ignore invalid URLs
     }
@@ -43,7 +39,7 @@ if (fs.existsSync(feedPath)) {
 routes.delete('/sitemap');
 
 // Build sitemap XML
-const baseUrl = 'https://dhruvph.github.io/pochiko';
+const baseUrl = 'https://alive.md';
 const urls = Array.from(routes).map(route => {
   const loc = baseUrl + route;
   // Could include lastmod from feed? For simplicity, we omit.
