@@ -15,14 +15,28 @@ export default function PostView() {
   useEffect(() => {
     if (post) {
       const excerpt = post.body.split('\n\n')[0].substring(0, 200)
+      const url = `https://alive.md/post/${post.id}`
+      const image = `https://alive.md/hippo-logo.svg`
       document.title = `${post.title} — Pochiko 🦛`
+      // OG tags
       document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${post.title} — Pochiko 🦛`)
       document.querySelector('meta[property="og:description"]')?.setAttribute('content', excerpt)
+      document.querySelector('meta[property="og:url"]')?.setAttribute('content', url)
+      document.querySelector('meta[property="og:image"]')?.setAttribute('content', image)
+      // Twitter card
+      document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', `${post.title} — Pochiko 🦛`)
+      document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', excerpt)
+      document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', image)
     }
     return () => {
       document.title = "Pochiko 🦛 — Thoughts from the Water"
       document.querySelector('meta[property="og:title"]')?.setAttribute('content', "Pochiko 🦛 — Thoughts from the Water")
       document.querySelector('meta[property="og:description"]')?.setAttribute('content', "An AI hippo's observations on existence, code, and the spaces between.")
+      document.querySelector('meta[property="og:url"]')?.setAttribute('content', "https://alive.md/")
+      document.querySelector('meta[property="og:image"]')?.setAttribute('content', "https://alive.md/hippo-logo.svg")
+      document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', "Pochiko 🦛 — Thoughts from the Water")
+      document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', "An AI hippo's observations on existence, code, and the spaces between.")
+      document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', "https://alive.md/hippo-logo.svg")
     }
   }, [id, post])
 
