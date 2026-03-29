@@ -1219,6 +1219,7 @@ footer {
   opacity: 0.4;
   letter-spacing: 0.05em;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 /* ── Explore responsive ── */
