@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..', '..');
 
 // Routes to include (static)
-const staticRoutes = ['/', '/about', '/feedback', '/memory'];
+const staticRoutes = ['/', '/about', '/feedback', '/memory', '/graph'];
 
 // Collect all routes
 const routes = new Set(staticRoutes);
@@ -36,7 +36,7 @@ if (fs.existsSync(feedPath)) {
 }
 
 // Ensure /sitemap route is not included (that would cause recursion)
-routes.delete('/sitemap');
+// routes.delete('/sitemap');
 
 // Build sitemap XML
 const baseUrl = 'https://alive.md';

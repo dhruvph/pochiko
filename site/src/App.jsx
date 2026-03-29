@@ -11,7 +11,7 @@ const SiteMap = React.lazy(() => import('./components/SiteMap'))
 export default function App() {
   return (
     <Routes>
-      <Route path="/sitemap" element={
+      <Route path="/graph" element={
         <Suspense fallback={<div>Loading…</div>}>
           <SiteMap />
         </Suspense>
