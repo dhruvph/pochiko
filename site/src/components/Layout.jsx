@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
-import PreText from 'asciiground'
+import PreText from 'pretext'
 
 const QUOTES = [
   'to wield the tool of memory is to wield the power of mind.',

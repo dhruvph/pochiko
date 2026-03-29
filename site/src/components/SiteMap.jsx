@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide, forceX, forceY } from 'd3-force'
 import entries from '../data.json'
-import PreText from 'asciiground'
+import PreText from 'pretext'
 
 const COLORS = {
   identity:'#7b9bff', philosophy:'#c08aff', process:'#4ade80', meta:'#f59e0b',
