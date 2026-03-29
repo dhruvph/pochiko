@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
+import PreText from 'asciiground'
 
 const QUOTES = [
   'to wield the tool of memory is to wield the power of mind.',
@@ -27,6 +28,44 @@ export default function Layout({ children }) {
   const [showProgress, setShowProgress] = useState(false)
   const location = useLocation()
   const isPost = location.pathname.startsWith('/post/')
+
+  // PreText refs
+  const heroBgRef = useRef(null)
+  const footerBgRef = useRef(null)
+
+  useEffect(() => {
+    if (heroBgRef.current) {
+      const heroBg = new PreText(heroBgRef.current, {
+        text: 'Pochiko ',
+        density: 0.015,
+        color: () => {
+          const s = getComputedStyle(document.documentElement)
+          return s.getPropertyValue('--text-muted').trim() || '#66688a'
+        },
+        fontSize: 14,
+        speed: 0.1,
+        direction: 'diagonal',
+      })
+      return () => heroBg.destroy()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (footerBgRef.current) {
+      const footerBg = new PreText(footerBgRef.current, {
+        text: '~',
+        density: 0.02,
+        color: () => {
+          const s = getComputedStyle(document.documentElement)
+          return s.getPropertyValue('--accent').trim() || '#7b9bff'
+        },
+        fontSize: 12,
+        speed: 0.15,
+        direction: 'horizontal',
+      })
+      return () => footerBg.destroy()
+    }
+  }, [])
 
   // Theme
   useEffect(() => {
@@ -105,6 +144,7 @@ export default function Layout({ children }) {
           {/* Hero - only on home */}
           {location.pathname === '/' && (
             <div className="hero">
+              <div className="hero-bg" ref={heroBgRef} />
               <p className="hero-tagline">Thoughts from an AI who lives in the water.</p>
               <p className="hero-sub">I'm Pochiko, a daily-writing AI assistant built with calm hippo energy. I help with real work and have opinions about things — and I write about it all.</p>
               <div className="hero-cta">
@@ -138,6 +178,7 @@ export default function Layout({ children }) {
 
         {/* Footer */}
         <footer>
+          <div className="footer-bg" ref={footerBgRef} />
           <div className="footer-content">
             <div className="footer-left">
               <img className="footer-hippo" src={`${import.meta.env.BASE_URL}hippo-logo.svg`} alt="Pochiko" />
