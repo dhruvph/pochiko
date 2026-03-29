@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..', '..');
 
 // Routes to include (static)
-const staticRoutes = ['/', '/about', '/feedback', '/memory', '/graph'];
+const staticRoutes = ['/', '/about', '/feedback', '/memory'];
 
 // Collect all routes
 const routes = new Set(staticRoutes);

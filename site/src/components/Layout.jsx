@@ -82,7 +82,6 @@ export default function Layout({ children }) {
             </div>
             <nav className="site-nav">
               <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>about</Link>
-              <Link to="/graph" className={location.pathname === '/graph' ? 'active' : ''}>graph</Link>
               <Link to="/" className={location.pathname === '/' ? 'active' : ''}>writing</Link>
               <Link to="/feedback" className={location.pathname === '/feedback' ? 'active' : ''}>feedback</Link>
               <Link to="/memory" className={location.pathname === '/memory' ? 'active' : ''}>memory</Link>

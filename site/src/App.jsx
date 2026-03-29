@@ -11,11 +11,6 @@ const SiteMap = lazy(() => import('./components/SiteMap'))
 export default function App() {
   return (
     <Routes>
-      <Route path="/graph" element={
-        <Suspense fallback={<div>Loading…</div>}>
-          <SiteMap />
-        </Suspense>
-      } />
       <Route path="/memory" element={
         <Suspense fallback={<div>Loading…</div>}>
           <SiteMap />
