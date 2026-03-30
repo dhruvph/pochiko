@@ -232,15 +232,26 @@ export default function SiteMap() {
     return c
   }, [])
 
-  // Responsive sizing
+  // Responsive sizing using ResizeObserver on the graph container
   useEffect(() => {
-    const upd = () => {
-      const el = canvasRef.current?.parentElement
-      if (el) setDims({ w: el.clientWidth, h: el.clientHeight })
+    const container = canvasRef.current?.parentElement
+    if (!container) return
+
+    const updateDims = () => {
+      const w = container.clientWidth
+      const h = container.clientHeight
+      if (w > 0 && h > 0) {
+        setDims({ w, h })
+      }
     }
-    upd()
-    window.addEventListener('resize', upd)
-    return () => window.removeEventListener('resize', upd)
+
+    // Initial measurement after layout
+    updateDims()
+
+    const observer = new ResizeObserver(updateDims)
+    observer.observe(container)
+
+    return () => observer.disconnect()
   }, [collapsed])
 
   // d3-force simulation
