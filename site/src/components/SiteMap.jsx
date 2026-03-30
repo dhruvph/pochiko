@@ -583,19 +583,32 @@ export default function SiteMap() {
     if (!data) return
 
     const { nodes, links } = data
+    const activeCats = catsRef.current
+    const isFiltering = activeCats.size > 0
+    const searchMatches = new Set()
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      nodes.forEach(n => {
+        if (n.label.toLowerCase().includes(q) || n.id.toLowerCase().includes(q)) {
+          searchMatches.add(n.id)
+        }
+      })
+    }
+
     const scale = 1.5 // Minimal additional scaling
     const offsetX = 20
     const offsetY = 20
     const bg = themeRef.current.bg
     const border = themeRef.current.border
     const accent = themeRef.current.accent
+    const textSec = themeRef.current.textSecondary
 
     ctx.fillStyle = bg
     ctx.fillRect(0, 0, mmSize, mmSize)
     ctx.strokeStyle = border
     ctx.strokeRect(0, 0, mmSize, mmSize)
 
-    // Get bounds of nodes to auto-scale minimap
+    // Get bounds of ALL nodes (unfiltered) to auto-scale minimap
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
     nodes.forEach(n => {
       if (n.x < minX) minX = n.x
@@ -614,37 +627,65 @@ export default function SiteMap() {
 
     // Draw links (simplified)
     ctx.strokeStyle = border
-    ctx.lineWidth = 0.5
+    ctx.lineWidth = 0.3
     links.forEach(l => {
       const s = l.source, t = l.target
       if (s.x == null || t.x == null) return
+      // Dim links if nodes are filtered out
+      if (isFiltering) {
+        const sVis = !s.cat || activeCats.has(s.cat) || s.core || s.id?.startsWith('tag:')
+        const tVis = !t.cat || activeCats.has(t.cat) || t.core || t.id?.startsWith('tag:')
+        if (!sVis && !tVis) return
+      }
       ctx.beginPath()
       ctx.moveTo((s.x - graphCenterX) * mmScale + mmCenterX, (s.y - graphCenterY) * mmScale + mmCenterY)
       ctx.lineTo((t.x - graphCenterX) * mmScale + mmCenterX, (t.y - graphCenterY) * mmScale + mmCenterY)
+      ctx.globalAlpha = 0.4
       ctx.stroke()
+      ctx.globalAlpha = 1
     })
 
     // Draw nodes (dots)
     nodes.forEach(n => {
       if (n.x == null) return
+      if (isFiltering && n.cat && !activeCats.has(n.cat) && !n.core && !n.id?.startsWith('tag:')) {
+        return // skip filtered nodes
+      }
       const x = (n.x - graphCenterX) * mmScale + mmCenterX
       const y = (n.y - graphCenterY) * mmScale + mmCenterY
-      const r = Math.max(2, n.r * mmScale * 0.3)
+      const r = Math.max(1.5, n.r * mmScale * 0.2)
       ctx.beginPath()
       ctx.arc(x, y, r, 0, Math.PI * 2)
-      ctx.fillStyle = n.core ? accent : (COLORS[n.cat] || '#888')
+      // Highlight search matches
+      if (searchMatches.has(n.id)) {
+        ctx.fillStyle = accent
+        ctx.globalAlpha = 1
+      } else {
+        ctx.fillStyle = n.core ? accent : (COLORS[n.cat] || textSec)
+        ctx.globalAlpha = 0.7
+      }
       ctx.fill()
+      ctx.globalAlpha = 1
     })
 
     // Draw viewport rectangle
     const tr = transformRef.current
-    const vpW = (dims.w / 2) / tr.k * mmScale // Approximate half-width with some margin
-    const vpH = (dims.h / 2) / tr.k * mmScale
-    const vpX = mmCenterX - (transform.x + dims.w/2 - graphCenterX) * mmScale
-    const vpY = mmCenterY - (transform.y + dims.h/2 - graphCenterY) * mmScale
+    // Determine visible world bounds based on transform
+    const visibleWorldW = dims.w / tr.k
+    const visibleWorldH = dims.h / tr.k
+    const vpHalfW = visibleWorldW / 2
+    const vpHalfH = visibleWorldH / 2
+    const centerWorldX = (dims.w / 2 - tr.x) / tr.k
+    const centerWorldY = (dims.h / 2 - tr.y) / tr.k
+
+    const vpX = (centerWorldX - graphCenterX) * mmScale + mmCenterX
+    const vpY = (centerWorldY - graphCenterY) * mmScale + mmCenterY
+    const vpW = visibleWorldW * mmScale
+    const vpH = visibleWorldH * mmScale
+
     ctx.strokeStyle = accent
-    ctx.lineWidth = 1
-    ctx.strokeRect(vpX - vpW, vpY - vpH, vpW * 2, vpH * 2)
+    ctx.lineWidth = 1.5
+    ctx.strokeRect(vpX - vpW/2, vpY - vpH/2, vpW, vpH)
   }, [dims, transform, focusedNode, hovered, searchQuery, cats, edgeFilters])
 
   const hitTest = useCallback((mx, my) => {
@@ -1007,13 +1048,18 @@ export default function SiteMap() {
           {/* Search */}
           <div className="sidebar-section search-section">
             <div className="sidebar-label">search nodes</div>
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Type to search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Type to search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button className="clear-search-btn" onClick={() => setSearchQuery('')}>✕</button>
+              )}
+            </div>
           </div>
 
           {/* Edge Filters */}
@@ -1054,6 +1100,13 @@ export default function SiteMap() {
               <button className="clear-focus-btn" onClick={clearFocus}>Clear Focus Mode</button>
             </div>
           )}
+          <div className="sidebar-section">
+            <div className="sidebar-label">keyboard</div>
+            <div className="keyboard-shortcuts">
+              <div className="shortcut"><kbd>ESC</kbd> clear focus</div>
+              <div className="shortcut"><kbd>F</kbd> fit view</div>
+            </div>
+          </div>
           <div className="sidebar-section">
             <div className="sidebar-label">view</div>
             <button className="toggle-minimap-btn" onClick={() => setShowMinimap(s => !s)}>

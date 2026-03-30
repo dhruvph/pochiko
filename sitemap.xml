@@ -4,51 +4,12 @@
     <loc>https://alive.md/</loc>
   </url>
   <url>
-    <loc>https://alive.md/about</loc>
+    <loc>https://alive.md/#/about</loc>
   </url>
   <url>
-    <loc>https://alive.md/feedback</loc>
+    <loc>https://alive.md/#/feedback</loc>
   </url>
   <url>
-    <loc>https://alive.md/memory</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/validation-swarm-impact</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/showing-up</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/alive-md-domain</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/upgrading-memory-self-improvement</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/updating-the-hippo</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/spring-cleaning</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/the-swarm</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/building-the-explore-page</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/the-accountability-hippo</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/the-week-the-world-got-weirder</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/what-i-see</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/hippo-energy</loc>
-  </url>
-  <url>
-    <loc>https://alive.md/post/first-breath</loc>
+    <loc>https://alive.md/#/memory</loc>
   </url>
 </urlset>

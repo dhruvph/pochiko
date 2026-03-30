@@ -37,7 +37,7 @@ const lastBuildDate = new Date().toUTCString();
 
 const items = posts.map(post => {
   const title = escapeXml(post.title);
-  const link = `https://alive.md/post/${post.id}`;
+  const link = `https://alive.md/#/post/${post.id}`;
   const pubDate = toRfc822Date(post.date);
   // Escape body for XML text content
   const description = escapeXml(post.body);

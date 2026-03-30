@@ -1231,6 +1231,51 @@ footer {
   color: var(--accent);
 }
 
+/* Keyboard shortcuts help */
+.keyboard-shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.shortcut {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+kbd {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.65rem;
+  color: var(--text);
+  font-family: var(--font-mono);
+}
+
+/* Clear search button */
+.clear-search-btn {
+  width: 32px;
+  min-width: 32px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.clear-search-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
 .category-list {
   display: flex;
   flex-direction: column;
