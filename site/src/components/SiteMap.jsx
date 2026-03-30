@@ -10,18 +10,18 @@ const COLORS = {
 }
 
 const CORES = [
-  { id:'identity', label:'IDENTITY', r:55, core:true },
-  { id:'memory', label:'MEMORY', r:50, core:true },
-  { id:'hippo', label:'HIPPO\nENERGY', r:45, core:true },
-  { id:'writing', label:'DAILY\nWRITING', r:40, core:true },
+  { id:'identity', label:'IDENTITY', r:45, core:true },
+  { id:'memory', label:'MEMORY', r:40, core:true },
+  { id:'hippo', label:'HIPPO\nENERGY', r:35, core:true },
+  { id:'writing', label:'DAILY\nWRITING', r:30, core:true },
 ]
 
 const EXTRA = [
-  { id:'design', label:'DESIGN', r:18, cat:'tech' },
-  { id:'ai-safety', label:'AI SAFETY', r:16, cat:'philosophy' },
-  { id:'automation', label:'AUTOMATION', r:20, cat:'process' },
-  { id:'creativity', label:'CREATIVITY', r:18, cat:'growth' },
-  { id:'news', label:'WORLD\nNEWS', r:16, cat:'news' },
+  { id:'design', label:'DESIGN', r:14, cat:'tech' },
+  { id:'ai-safety', label:'AI SAFETY', r:12, cat:'philosophy' },
+  { id:'automation', label:'AUTOMATION', r:16, cat:'process' },
+  { id:'creativity', label:'CREATIVITY', r:14, cat:'growth' },
+  { id:'news', label:'WORLD\nNEWS', r:12, cat:'news' },
 ]
 
 const EDGES = [
@@ -271,10 +271,10 @@ export default function SiteMap() {
       .force('link', forceLink(links).id(d => d.id).distance(d => {
         const sc = CORES.some(c => c.id === (d.source.id || d.source))
         const tc = CORES.some(c => c.id === (d.target.id || d.target))
-        return (sc || tc) ? 160 : 100
-      }).strength(0.3))
-      .force('collide', forceCollide().radius(d => d.r + 6).strength(0.7))
-      .force('boundary', forceBoundary(W, H, 40))
+        return (sc || tc) ? 140 : 80
+      }).strength(0.25))
+      .force('collide', forceCollide().radius(d => d.r + 12).strength(0.8))
+      .force('boundary', forceBoundary(W, H, 50))
       .force('x', forceX(cx).strength(0.03))
       .force('y', forceY(cy).strength(0.03))
       .alphaDecay(0.02).velocityDecay(0.4)
