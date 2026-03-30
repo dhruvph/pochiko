@@ -71,74 +71,69 @@ export default function Layout({ children }) {
 
   // Hero PreText background (diagonal)
   useEffect(() => {
-    if (heroBgInstance.current) {
-      heroBgInstance.current.destroy()
-      heroBgInstance.current = null
-    }
-    if (!heroBgRef.current) return
-
+    let instance = null
     const el = heroBgRef.current
-    // Wait for element to be in DOM, visible, and have non-zero dimensions
-    if (!el.offsetParent || el.clientWidth === 0 || el.clientHeight === 0) {
-      return
-    }
-
-    try {
-      const textColor = getThemeTextColor()
-      const bg = new PreText(el, {
-        text: 'Pochiko ',
-        density: 0.03,
-        color: textColor,
-        fontSize: 16,
-        speed: 0.2,
-        direction: 'diagonal',
-      })
-      heroBgInstance.current = bg
-    } catch (err) {
-      console.warn('PreText initialization failed (hero):', err)
+    if (el && el.offsetParent && el.clientWidth > 0 && el.clientHeight > 0) {
+      try {
+        const textColor = getThemeTextColor()
+        instance = new PreText(el, {
+          text: 'Pochiko ',
+          density: 0.03,
+          color: textColor,
+          fontSize: 16,
+          speed: 0.2,
+          direction: 'diagonal',
+        })
+        heroBgInstance.current = instance
+      } catch (err) {
+        console.warn('PreText initialization failed (hero):', err)
+        heroBgInstance.current = null
+      }
     }
 
     return () => {
-      if (heroBgInstance.current) {
-        heroBgInstance.current.destroy()
-        heroBgInstance.current = null
+      if (instance) {
+        try {
+          instance.destroy()
+        } catch (e) {
+          // ignore destroy errors
+        }
       }
+      heroBgInstance.current = null
     }
   }, [theme, location.pathname])
 
   // Footer PreText background (horizontal)
   useEffect(() => {
-    if (footerBgInstance.current) {
-      footerBgInstance.current.destroy()
-      footerBgInstance.current = null
-    }
-    if (!footerBgRef.current) return
-
+    let instance = null
     const el = footerBgRef.current
-    if (!el.offsetParent || el.clientWidth === 0 || el.clientHeight === 0) {
-      return
-    }
-
-    try {
-      const textColor = getThemeTextColor()
-      const bg = new PreText(el, {
-        text: 'Pochiko ',
-        density: 0.04,
-        color: textColor,
-        fontSize: 12,
-        speed: 0.15,
-        direction: 'horizontal',
-      })
-      footerBgInstance.current = bg
-    } catch (err) {
-      console.warn('PreText initialization failed (footer):', err)
+    if (el && el.offsetParent && el.clientWidth > 0 && el.clientHeight > 0) {
+      try {
+        const textColor = getThemeTextColor()
+        instance = new PreText(el, {
+          text: 'Pochiko ',
+          density: 0.04,
+          color: textColor,
+          fontSize: 12,
+          speed: 0.15,
+          direction: 'horizontal',
+        })
+        footerBgInstance.current = instance
+      } catch (err) {
+        console.warn('PreText initialization failed (footer):', err)
+        footerBgInstance.current = null
+      }
     }
 
     return () => {
-      if (footerBgInstance.current) {
-        footerBgInstance.current.destroy()
-        footerBgInstance.current = null
+      if (instance) {
+        try {
+          instance.destroy()
+        } catch (e) {
+          // ignore
+        }
       }
+      footerBgInstance.current = null
     }
   }, [theme])
 

@@ -303,7 +303,7 @@ export default function SiteMap() {
       return
     }
 
-    let bg
+    let bg = null
     try {
       bg = new PreText(el, {
         text: 'Pochiko ',
@@ -315,11 +315,16 @@ export default function SiteMap() {
       })
     } catch (err) {
       console.warn('PreText initialization failed (SiteMap):', err)
-      return
     }
 
     return () => {
-      if (bg) bg.destroy()
+      if (bg) {
+        try {
+          bg.destroy()
+        } catch (e) {
+          // ignore
+        }
+      }
     }
   }, [])
 
