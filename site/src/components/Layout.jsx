@@ -77,10 +77,9 @@ export default function Layout({ children }) {
     }
     if (!heroBgRef.current) return
 
-    // Wait for element to be in DOM and have dimensions before initializing
     const el = heroBgRef.current
-    if (!el.offsetParent) {
-      // Element not yet mounted or hidden; skip initialization
+    // Wait for element to be in DOM, visible, and have non-zero dimensions
+    if (!el.offsetParent || el.clientWidth === 0 || el.clientHeight === 0) {
       return
     }
 
@@ -116,7 +115,7 @@ export default function Layout({ children }) {
     if (!footerBgRef.current) return
 
     const el = footerBgRef.current
-    if (!el.offsetParent) {
+    if (!el.offsetParent || el.clientWidth === 0 || el.clientHeight === 0) {
       return
     }
 

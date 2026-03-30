@@ -298,8 +298,10 @@ export default function SiteMap() {
   useEffect(() => {
     const el = bgRef.current
     if (!el) return
-    // Ensure element is in DOM and has dimensions
-    if (!el.offsetParent) return
+    // Wait for element to be in DOM, visible, and have non-zero dimensions
+    if (!el.offsetParent || el.clientWidth === 0 || el.clientHeight === 0) {
+      return
+    }
 
     let bg
     try {
