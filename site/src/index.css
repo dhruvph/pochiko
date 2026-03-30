@@ -149,8 +149,10 @@ a { color: inherit; }
 }
 
 .site-hippo {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
+  max-width: 40px;
+  max-height: 40px;
   opacity: 0.9;
   transition: transform 0.4s var(--ease);
 }
@@ -888,8 +890,10 @@ footer {
 }
 
 .footer-hippo {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+  max-width: 16px;
+  max-height: 16px;
   opacity: 0.3;
   vertical-align: middle;
   margin-right: var(--space-xs);
