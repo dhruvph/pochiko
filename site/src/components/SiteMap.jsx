@@ -215,6 +215,8 @@ export default function SiteMap() {
     temporal: true,
     'tag-bridge': true
   })
+  // Category filter state
+  const [cats, setCats] = useState(new Set())
   // Minimap state
   const minimapRef = useRef(null)
   const [showMinimap, setShowMinimap] = useState(true)
