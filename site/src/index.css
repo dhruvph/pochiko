@@ -1413,6 +1413,7 @@ kbd {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  min-height: 400px; /* ensure visible even if parent sizing delayed */
 }
 
 .ascii-bg {
