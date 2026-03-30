@@ -16,16 +16,12 @@ export default function App() {
           <SiteMap />
         </Suspense>
       } />
-      <Route path="*" element={
-        <Layout>
-          <Routes>
-            <Route path="/" element={<BlogList />} />
-            <Route path="/post/:id" element={<PostView />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/feedback" element={<Feedback />} />
-          </Routes>
-        </Layout>
-      } />
+      <Route path="/" element={<Layout />}>
+        <Route index element={<BlogList />} />
+        <Route path="post/:id" element={<PostView />} />
+        <Route path="about" element={<About />} />
+        <Route path="feedback" element={<Feedback />} />
+      </Route>
     </Routes>
   )
 }

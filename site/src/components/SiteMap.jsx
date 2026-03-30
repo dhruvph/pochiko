@@ -196,6 +196,8 @@ export default function SiteMap() {
   const grainCanvasRef = useRef(null)
   const bgRef = useRef(null) // PreText background
   const [hovered, setHovered] = useState(null)
+  // Track if navigation was triggered by touch to prevent ghost click
+  const touchNavRef = useRef(false)
   const [collapsed, setCollapsed] = useState(false)
   const [dims, setDims] = useState({ w: 800, h: 600 })
   // Zoom/pan state
@@ -292,17 +294,29 @@ export default function SiteMap() {
 
   // Initialize PreText ASCII background
   useEffect(() => {
-    if (!bgRef.current) return
-    const bg = new PreText(bgRef.current, {
-      text: 'Pochiko ',
-      density: 0.03,
-      color: () => themeRef.current.text,
-      fontSize: 16,
-      speed: 0.2,
-      direction: 'diagonal',
-    })
-    // Store instance for updates if needed
-    return () => bg.destroy()
+    const el = bgRef.current
+    if (!el) return
+    // Ensure element is in DOM and has dimensions
+    if (!el.offsetParent) return
+
+    let bg
+    try {
+      bg = new PreText(el, {
+        text: 'Pochiko ',
+        density: 0.03,
+        color: () => themeRef.current.text,
+        fontSize: 16,
+        speed: 0.2,
+        direction: 'diagonal',
+      })
+    } catch (err) {
+      console.warn('PreText initialization failed (SiteMap):', err)
+      return
+    }
+
+    return () => {
+      if (bg) bg.destroy()
+    }
   }, [])
 
   // Sync cats ref
@@ -860,12 +874,19 @@ export default function SiteMap() {
     e.preventDefault()
     const r = canvasRef.current?.getBoundingClientRect()
     if (!r || !dataRef.current) return
-    const mx = e.touches[0].clientX - r.left, my = e.touches[0].clientY - r.top
-    const n = hitTest(mx, my)
-    if (n && !n.core) {
+    const touch = e.touches[0]
+    const mx = touch.clientX - r.left, my = touch.clientY - r.top
+    // Update hovered for immediate visual feedback
+    const f = hitTest(mx, my)
+    if (f?.id !== hoveredRef.current) {
+      hoveredRef.current = f?.id || null
+      setHovered(hoveredRef.current)
+      dataRef.current?.startLoop?.()
+    }
+    if (f && !f.core) {
       pendingDragRef.current = {
-        nodeId: n.id, startX: mx, startY: my,
-        offsetX: mx - n.x, offsetY: my - n.y,
+        nodeId: f.id, startX: mx, startY: my,
+        offsetX: mx - f.x, offsetY: my - f.y,
       }
       document.addEventListener('touchmove', docTouchMove, { passive: false })
       document.addEventListener('touchend', endDrag)
@@ -886,6 +907,34 @@ export default function SiteMap() {
     canvasRef.current.style.cursor = f?.date ? 'pointer' : 'default'
   }, [hitTest])
 
+  const handleTouchMove = useCallback((e) => {
+    e.preventDefault()
+    const r = canvasRef.current?.getBoundingClientRect()
+    if (!r || !dataRef.current) return
+    if (dragRef.current || pendingDragRef.current) return
+    const touch = e.touches[0]
+    const mx = touch.clientX - r.left, my = touch.clientY - r.top
+    const f = hitTest(mx, my)
+    if (f?.id !== hoveredRef.current) {
+      hoveredRef.current = f?.id || null
+      setHovered(hoveredRef.current)
+      dataRef.current?.startLoop?.()
+    }
+  }, [hitTest])
+
+  const handleTouchEnd = useCallback((e) => {
+    if (dragRef.current) return
+    const r = canvasRef.current?.getBoundingClientRect()
+    if (!r || !dataRef.current) return
+    const touch = e.changedTouches[0]
+    const mx = touch.clientX - r.left, my = touch.clientY - r.top
+    const n = hitTest(mx, my)
+    if (n?.date) {
+      navigate(`/post/${n.id}`)
+      touchNavRef.current = true // mark to prevent subsequent click
+    }
+  }, [hitTest, navigate])
+
   const handleMouseLeave = useCallback(() => {
     if (!dragRef.current) {
       hoveredRef.current = null; setHovered(null)
@@ -895,6 +944,10 @@ export default function SiteMap() {
   }, [])
 
   const handleClick = useCallback(() => {
+    if (touchNavRef.current) {
+      touchNavRef.current = false
+      return
+    }
     if (!hovered || !dataRef.current) return
     const n = dataRef.current.nodes.find(n => n.id === hovered)
     if (n?.date) navigate(`/post/${n.id}`)
@@ -1136,6 +1189,8 @@ export default function SiteMap() {
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         />
         <div className="sitemap-hint">hover nodes to explore · click posts to read · scroll to zoom · shift+drag to pan · double-click for focus</div>
         <div className="zoom-controls">

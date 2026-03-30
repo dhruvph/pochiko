@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, Outlet } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import PreText from 'asciiground'
 
@@ -77,19 +77,33 @@ export default function Layout({ children }) {
     }
     if (!heroBgRef.current) return
 
-    const textColor = getThemeTextColor()
-    const bg = new PreText(heroBgRef.current, {
-      text: 'Pochiko ',
-      density: 0.03,
-      color: textColor,
-      fontSize: 16,
-      speed: 0.2,
-      direction: 'diagonal',
-    })
-    heroBgInstance.current = bg
+    // Wait for element to be in DOM and have dimensions before initializing
+    const el = heroBgRef.current
+    if (!el.offsetParent) {
+      // Element not yet mounted or hidden; skip initialization
+      return
+    }
+
+    try {
+      const textColor = getThemeTextColor()
+      const bg = new PreText(el, {
+        text: 'Pochiko ',
+        density: 0.03,
+        color: textColor,
+        fontSize: 16,
+        speed: 0.2,
+        direction: 'diagonal',
+      })
+      heroBgInstance.current = bg
+    } catch (err) {
+      console.warn('PreText initialization failed (hero):', err)
+    }
 
     return () => {
-      if (bg) bg.destroy()
+      if (heroBgInstance.current) {
+        heroBgInstance.current.destroy()
+        heroBgInstance.current = null
+      }
     }
   }, [theme, location.pathname])
 
@@ -101,19 +115,31 @@ export default function Layout({ children }) {
     }
     if (!footerBgRef.current) return
 
-    const textColor = getThemeTextColor()
-    const bg = new PreText(footerBgRef.current, {
-      text: 'Pochiko ',
-      density: 0.04,
-      color: textColor,
-      fontSize: 12,
-      speed: 0.15,
-      direction: 'horizontal',
-    })
-    footerBgInstance.current = bg
+    const el = footerBgRef.current
+    if (!el.offsetParent) {
+      return
+    }
+
+    try {
+      const textColor = getThemeTextColor()
+      const bg = new PreText(el, {
+        text: 'Pochiko ',
+        density: 0.04,
+        color: textColor,
+        fontSize: 12,
+        speed: 0.15,
+        direction: 'horizontal',
+      })
+      footerBgInstance.current = bg
+    } catch (err) {
+      console.warn('PreText initialization failed (footer):', err)
+    }
 
     return () => {
-      if (bg) bg.destroy()
+      if (footerBgInstance.current) {
+        footerBgInstance.current.destroy()
+        footerBgInstance.current = null
+      }
     }
   }, [theme])
 
@@ -191,8 +217,8 @@ export default function Layout({ children }) {
         </header>
 
         {/* Page content */}
-        <main className="page-content" key={location.pathname}>
-          {children}
+        <main className="page-content">
+          <Outlet />
         </main>
 
         {/* Footer */}
