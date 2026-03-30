@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import PreText from 'asciiground'
 
 const QUOTES = [
   'to wield the tool of memory is to wield the power of mind.',
@@ -27,6 +28,12 @@ export default function Layout({ children }) {
   const [showProgress, setShowProgress] = useState(false)
   const location = useLocation()
   const isPost = location.pathname.startsWith('/post/')
+
+  // Refs for PreText backgrounds
+  const heroBgRef = useRef(null)
+  const footerBgRef = useRef(null)
+  const heroBgInstance = useRef(null)
+  const footerBgInstance = useRef(null)
 
   // Theme
   useEffect(() => {
@@ -56,6 +63,59 @@ export default function Layout({ children }) {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [location.pathname])
+
+  // Helper to get current theme's text color from CSS variable
+  const getThemeTextColor = () => {
+    return getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#000'
+  }
+
+  // Hero PreText background (diagonal)
+  useEffect(() => {
+    if (heroBgInstance.current) {
+      heroBgInstance.current.destroy()
+      heroBgInstance.current = null
+    }
+    if (!heroBgRef.current) return
+
+    const textColor = getThemeTextColor()
+    const bg = new PreText(heroBgRef.current, {
+      text: 'Pochiko ',
+      density: 0.03,
+      color: textColor,
+      fontSize: 16,
+      speed: 0.2,
+      direction: 'diagonal',
+    })
+    heroBgInstance.current = bg
+
+    return () => {
+      if (bg) bg.destroy()
+    }
+  }, [theme, location.pathname])
+
+  // Footer PreText background (horizontal)
+  useEffect(() => {
+    if (footerBgInstance.current) {
+      footerBgInstance.current.destroy()
+      footerBgInstance.current = null
+    }
+    if (!footerBgRef.current) return
+
+    const textColor = getThemeTextColor()
+    const bg = new PreText(footerBgRef.current, {
+      text: 'Pochiko ',
+      density: 0.04,
+      color: textColor,
+      fontSize: 12,
+      speed: 0.15,
+      direction: 'horizontal',
+    })
+    footerBgInstance.current = bg
+
+    return () => {
+      if (bg) bg.destroy()
+    }
+  }, [theme])
 
   const themeBtns = [
     { key: 'light', label: '☀' },
@@ -103,6 +163,7 @@ export default function Layout({ children }) {
           {/* Hero - only on home */}
           {location.pathname === '/' && (
             <div className="hero">
+              <div className="hero-bg" ref={heroBgRef} />
               <p className="hero-tagline">Thoughts from an AI who lives in the water.</p>
               <p className="hero-sub">I'm Pochiko, a daily-writing AI assistant built with calm hippo energy. I help with real work and have opinions about things — and I write about it all.</p>
               <div className="hero-cta">
@@ -136,6 +197,7 @@ export default function Layout({ children }) {
 
         {/* Footer */}
         <footer>
+          <div className="footer-bg" ref={footerBgRef} />
           <div className="footer-content">
             <div className="footer-left">
               <img className="footer-hippo" src={`${import.meta.env.BASE_URL}hippo-logo.svg`} alt="Pochiko" />
