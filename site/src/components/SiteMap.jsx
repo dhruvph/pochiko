@@ -197,8 +197,25 @@ export default function SiteMap() {
   const bgRef = useRef(null) // PreText background
   const [hovered, setHovered] = useState(null)
   const [collapsed, setCollapsed] = useState(false)
-  const [cats, setCats] = useState(new Set())
   const [dims, setDims] = useState({ w: 800, h: 600 })
+  // Zoom/pan state
+  const [transform, setTransform] = useState({ k: 1, x: 0, y: 0 })
+  const transformRef = useRef({ k: 1, x: 0, y: 0 })
+  // Focus mode state
+  const [focusedNode, setFocusedNode] = useState(null)
+  const focusedRef = useRef(null)
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('')
+  // Edge filter state
+  const [edgeFilters, setEdgeFilters] = useState({
+    manual: true,
+    'tag-shared': true,
+    temporal: true,
+    'tag-bridge': true
+  })
+  // Minimap state
+  const minimapRef = useRef(null)
+  const [showMinimap, setShowMinimap] = useState(true)
 
   const { nodes: allNodes, links: allLinks } = useMemo(buildNodes, [])
 
@@ -315,10 +332,9 @@ export default function SiteMap() {
       const simActive = alpha > 0.001
       const activeCats = catsRef.current
       const isFiltering = activeCats.size > 0
-      const interacting = dragRef.current || hId
+      const interacting = dragRef.current || hId || isPanning.current
 
       if (!simActive && !interacting && hId === prevHId && alpha === prevAlpha) {
-        // Stop the loop — will be restarted by interaction handlers
         running = false
         animRef.current = null
         return
@@ -326,30 +342,77 @@ export default function SiteMap() {
       prevHId = hId
       prevAlpha = alpha
 
-      const conn = new Set()
-      if (hId) {
-        conn.add(hId)
+      // Get current transform
+      const tr = transformRef.current
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.clearRect(0, 0, W, H)
+
+      // Apply zoom/pan
+      ctx.translate(tr.x, tr.y)
+      ctx.scale(tr.k, tr.k)
+
+      // Determine which nodes are connected to focus or hover
+      const fId = focusedRef.current
+      const connectedToFocus = new Set()
+      const connectedToHover = new Set()
+
+      if (fId) {
+        connectedToFocus.add(fId)
         links.forEach(l => {
           const s = l.source.id || l.source, t = l.target.id || l.target
-          if (s === hId) conn.add(t); if (t === hId) conn.add(s)
+          if (s === fId) connectedToFocus.add(t)
+          if (t === fId) connectedToFocus.add(s)
         })
       }
 
-      ctx.clearRect(0, 0, W, H)
-      const th = themeRef.current
+      if (hId) {
+        connectedToHover.add(hId)
+        links.forEach(l => {
+          const s = l.source.id || l.source, t = l.target.id || l.target
+          if (s === hId) connectedToHover.add(t)
+          if (t === hId) connectedToHover.add(s)
+        })
+      }
 
-      // Edges
+      // Search match nodes
+      const searchMatches = new Set()
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase()
+        nodes.forEach(n => {
+          if (n.label.toLowerCase().includes(q) || n.id.toLowerCase().includes(q)) {
+            searchMatches.add(n.id)
+          }
+        })
+      }
+
+      // Draw edges
+      const th = themeRef.current
       links.forEach(l => {
         const s = l.source, t = l.target
         if (s.x == null || t.x == null) return
+
+        // Edge type filtering
+        const edgeType = l.type || 'manual'
+        if (!edgeFilters[edgeType]) return
+
+        // Category filtering
         if (isFiltering) {
           const sVis = !s.cat || activeCats.has(s.cat) || s.core || s.id?.startsWith('tag:')
           const tVis = !t.cat || activeCats.has(t.cat) || t.core || t.id?.startsWith('tag:')
           if (!sVis && !tVis) return
         }
+
+        // Focus mode - dim edges not connected to focus
+        let edgeDim = false
+        if (fId) {
+          if (!connectedToFocus.has(s.id) && !connectedToFocus.has(t.id)) {
+            edgeDim = true
+          }
+        }
+
+        // Hover highlight
         const hi = hId && (s.id === hId || t.id === hId)
         const dm = hId && !hi
-        const edgeType = l.type || 'manual'
 
         ctx.beginPath()
         ctx.moveTo(s.x, s.y)
@@ -362,23 +425,23 @@ export default function SiteMap() {
         if (edgeType === 'temporal') {
           ctx.setLineDash([3, 6])
           ctx.strokeStyle = hi ? th.accent : th.textSec
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.25
+          ctx.globalAlpha = dm || edgeDim ? 0.08 : hi ? 0.9 : 0.25
           ctx.lineWidth = 0.8
         } else if (edgeType === 'tag-shared') {
           ctx.setLineDash([])
           ctx.strokeStyle = hi ? th.accent : th.textSec
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.35
+          ctx.globalAlpha = dm || edgeDim ? 0.08 : hi ? 0.9 : 0.35
           ctx.lineWidth = hi ? 2 : 1
         } else if (edgeType === 'tag-bridge') {
           ctx.setLineDash([])
           const col = COLORS[s.cat] || COLORS[t.cat] || th.accent
           ctx.strokeStyle = hi ? th.accent : col
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.4
+          ctx.globalAlpha = dm || edgeDim ? 0.08 : hi ? 0.9 : 0.4
           ctx.lineWidth = hi ? 2 : 1
         } else {
           ctx.setLineDash([])
           ctx.strokeStyle = hi ? th.accent : th.textSec
-          ctx.globalAlpha = dm ? 0.05 : hi ? 0.9 : 0.4
+          ctx.globalAlpha = dm || edgeDim ? 0.08 : hi ? 0.9 : 0.4
           ctx.lineWidth = hi ? 2 : 1.2
         }
 
@@ -386,51 +449,102 @@ export default function SiteMap() {
         ctx.setLineDash([])
       })
 
-      // Nodes
+      // Draw nodes
       ctx.globalAlpha = 1
       const draggedId = dragRef.current?.nodeId
-      nodes.forEach(n => {
+
+      // Sort nodes: core/nodes first (background), then others (foreground) for proper layering
+      const sortedNodes = [...nodes].sort((a, b) => {
+        const aPriority = (a.core ? 2 : 0) + (a.id === draggedId ? 1 : 0)
+        const bPriority = (b.core ? 2 : 0) + (b.id === draggedId ? 1 : 0)
+        return aPriority - bPriority
+      })
+
+      sortedNodes.forEach(n => {
         if (n.x == null) return
         if (isFiltering && n.cat && !activeCats.has(n.cat) && !n.core && !n.id?.startsWith('tag:')) return
+
+        // Focus mode dimming
+        let isDimmed = false
+        if (fId && !connectedToFocus.has(n.id) && !n.core) {
+          isDimmed = true
+        }
+
         const isH = hId === n.id
         const isD = draggedId === n.id
-        const isC = hId ? conn.has(n.id) : true
+        const isC = hId ? connectedToHover.has(n.id) : true
         const dm = hId && !isC
         const col = nColor(n, th)
-        ctx.save(); ctx.globalAlpha = dm ? 0.12 : 1
+
+        ctx.save()
+        ctx.globalAlpha = isDimmed ? 0.15 : (dm ? 0.12 : 1)
 
         // Core glow
         if (n.core) {
           const g = ctx.createRadialGradient(n.x, n.y, n.r * 0.8, n.x, n.y, n.r + 20)
-          g.addColorStop(0, col + '15'); g.addColorStop(1, 'transparent')
-          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 20, 0, Math.PI * 2); ctx.fill()
+          g.addColorStop(0, col + '15')
+          g.addColorStop(1, 'transparent')
+          ctx.fillStyle = g
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, n.r + 20, 0, Math.PI * 2)
+          ctx.fill()
+        }
+
+        // Search highlight - subtle ring
+        if (searchMatches.has(n.id) && !isH) {
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, n.r + 4, 0, Math.PI * 2)
+          ctx.strokeStyle = th.accent
+          ctx.lineWidth = 1.5
+          ctx.stroke()
         }
 
         // Drag glow
         if (isD) {
           const dg = ctx.createRadialGradient(n.x, n.y, n.r, n.x, n.y, n.r + 18)
-          dg.addColorStop(0, col + '40'); dg.addColorStop(1, 'transparent')
-          ctx.fillStyle = dg; ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 18, 0, Math.PI * 2); ctx.fill()
+          dg.addColorStop(0, col + '40')
+          dg.addColorStop(1, 'transparent')
+          ctx.fillStyle = dg
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, n.r + 18, 0, Math.PI * 2)
+          ctx.fill()
+        }
+
+        // Focus highlight - outer ring
+        if (fId && connectedToFocus.has(n.id) && !n.core) {
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, n.r + 6, 0, Math.PI * 2)
+          ctx.strokeStyle = th.accent
+          ctx.lineWidth = 2
+          ctx.globalAlpha = isDimmed ? 0.3 : 0.6
+          ctx.stroke()
         }
 
         const r = isD ? n.r + 5 : isH ? n.r + 3 : n.r
-        ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2)
-        ctx.fillStyle = n.core ? th.bgElevated : th.bg; ctx.fill()
-        ctx.strokeStyle = col; ctx.lineWidth = isD ? 3 : isH ? 2.5 : n.core ? 1.5 : 1; ctx.stroke()
+        ctx.beginPath()
+        ctx.arc(n.x, n.y, r, 0, Math.PI * 2)
+        ctx.fillStyle = n.core ? th.bgElevated : th.bg
+        ctx.fill()
+        ctx.strokeStyle = col
+        ctx.lineWidth = isD ? 3 : isH ? 2.5 : n.core ? 1.5 : 1
+        ctx.stroke()
 
         const lines = n.label.split('\n')
         const fs = n.core ? 10 : n.r > 20 ? 7.5 : 6.5
         ctx.font = `${n.core ? '600' : '400'} ${fs}px "JetBrains Mono","Fira Code",monospace`
-        ctx.fillStyle = dm ? th.textSec : n.core ? th.text : th.textSec
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-        const lh = fs + 2, sy = n.y - ((lines.length - 1) * lh) / 2
+        ctx.fillStyle = isDimmed ? th.textMuted || '#666' : (dm ? th.textSec : n.core ? th.text : th.textSec)
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        const lh = fs + 2
+        const sy = n.y - ((lines.length - 1) * lh) / 2
         lines.forEach((ln, li) => ctx.fillText(ln, n.x, sy + li * lh))
         ctx.restore()
       })
 
-      // Grain overlay
+      // Grain overlay (still in screen space)
       const gc = grainCanvasRef.current
       if (gc) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
         ctx.globalAlpha = 0.02
         const pat = ctx.createPattern(gc, 'repeat')
         ctx.fillStyle = pat
@@ -440,6 +554,7 @@ export default function SiteMap() {
 
       animRef.current = requestAnimationFrame(draw)
     }
+
     // Expose loop starter for event handlers
     const startLoop = () => {
       if (!running) {
@@ -447,7 +562,6 @@ export default function SiteMap() {
         animRef.current = requestAnimationFrame(draw)
       }
     }
-    // Store startLoop ref for handlers
     dataRef.current = { ...dataRef.current, startLoop }
     animRef.current = requestAnimationFrame(draw)
     return () => {
@@ -456,10 +570,99 @@ export default function SiteMap() {
     }
   }, [dims])
 
+  // ── Minimap Rendering ──
+  useEffect(() => {
+    const canvas = minimapRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    const mmSize = 180
+    canvas.width = mmSize
+    canvas.height = mmSize
+
+    const data = dataRef.current
+    if (!data) return
+
+    const { nodes, links } = data
+    const scale = 1.5 // Minimal additional scaling
+    const offsetX = 20
+    const offsetY = 20
+    const bg = themeRef.current.bg
+    const border = themeRef.current.border
+    const accent = themeRef.current.accent
+
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, mmSize, mmSize)
+    ctx.strokeStyle = border
+    ctx.strokeRect(0, 0, mmSize, mmSize)
+
+    // Get bounds of nodes to auto-scale minimap
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+    nodes.forEach(n => {
+      if (n.x < minX) minX = n.x
+      if (n.x > maxX) maxX = n.x
+      if (n.y < minY) minY = n.y
+      if (n.y > maxY) maxY = n.y
+    })
+    const padding = 40
+    const graphW = maxX - minX + padding * 2
+    const graphH = maxY - minY + padding * 2
+    const mmScale = Math.min((mmSize - 20) / graphW, (mmSize - 20) / graphH, 1)
+    const mmCenterX = mmSize / 2
+    const mmCenterY = mmSize / 2
+    const graphCenterX = (minX + maxX) / 2
+    const graphCenterY = (minY + maxY) / 2
+
+    // Draw links (simplified)
+    ctx.strokeStyle = border
+    ctx.lineWidth = 0.5
+    links.forEach(l => {
+      const s = l.source, t = l.target
+      if (s.x == null || t.x == null) return
+      ctx.beginPath()
+      ctx.moveTo((s.x - graphCenterX) * mmScale + mmCenterX, (s.y - graphCenterY) * mmScale + mmCenterY)
+      ctx.lineTo((t.x - graphCenterX) * mmScale + mmCenterX, (t.y - graphCenterY) * mmScale + mmCenterY)
+      ctx.stroke()
+    })
+
+    // Draw nodes (dots)
+    nodes.forEach(n => {
+      if (n.x == null) return
+      const x = (n.x - graphCenterX) * mmScale + mmCenterX
+      const y = (n.y - graphCenterY) * mmScale + mmCenterY
+      const r = Math.max(2, n.r * mmScale * 0.3)
+      ctx.beginPath()
+      ctx.arc(x, y, r, 0, Math.PI * 2)
+      ctx.fillStyle = n.core ? accent : (COLORS[n.cat] || '#888')
+      ctx.fill()
+    })
+
+    // Draw viewport rectangle
+    const tr = transformRef.current
+    const vpW = (dims.w / 2) / tr.k * mmScale // Approximate half-width with some margin
+    const vpH = (dims.h / 2) / tr.k * mmScale
+    const vpX = mmCenterX - (transform.x + dims.w/2 - graphCenterX) * mmScale
+    const vpY = mmCenterY - (transform.y + dims.h/2 - graphCenterY) * mmScale
+    ctx.strokeStyle = accent
+    ctx.lineWidth = 1
+    ctx.strokeRect(vpX - vpW, vpY - vpH, vpW * 2, vpH * 2)
+  }, [dims, transform, focusedNode, hovered, searchQuery, cats, edgeFilters])
+
   const hitTest = useCallback((mx, my) => {
     if (!dataRef.current) return null
+    // Convert screen coordinates to world coordinates
+    const tr = transformRef.current
+    const worldX = (mx - tr.x) / tr.k
+    const worldY = (my - tr.y) / tr.k
+
+    // Consider active category filters
+    const activeCats = catsRef.current
+    const isFiltering = activeCats.size > 0
+
     for (const n of dataRef.current.nodes) {
-      const dx = n.x - mx, dy = n.y - my
+      if (isFiltering && n.cat && !activeCats.has(n.cat) && !n.core && !n.id?.startsWith('tag:')) {
+        continue
+      }
+      const dx = n.x - worldX, dy = n.y - worldY
       if (dx * dx + dy * dy <= (n.r + 4) * (n.r + 4)) return n
     }
     return null
@@ -482,14 +685,16 @@ export default function SiteMap() {
   }, [])
 
   const endDrag = useCallback(() => {
-    if (!dragRef.current && !pendingDragRef.current) return
+    if (!dragRef.current && !pendingDragRef.current && !isPanning.current) return
     const nodeId = dragRef.current?.nodeId
     pendingDragRef.current = null
     dragRef.current = null
+    isPanning.current = false
     document.removeEventListener('mousemove', docMouseMove)
     document.removeEventListener('mouseup', endDrag)
     document.removeEventListener('touchmove', docTouchMove)
     document.removeEventListener('touchend', endDrag)
+    if (canvasRef.current) canvasRef.current.style.cursor = 'default'
     if (!nodeId || !dataRef.current) return
     const n = dataRef.current.nodes.find(n => n.id === nodeId)
     if (n && !CORE_IDS.has(n.id)) {
@@ -502,6 +707,20 @@ export default function SiteMap() {
   const docMouseMove = useCallback((e) => {
     const r = canvasRef.current?.getBoundingClientRect()
     if (!r || !dataRef.current) return
+
+    // Handle panning
+    if (isPanning.current) {
+      const dx = e.clientX - panStart.current.x
+      const dy = e.clientY - panStart.current.y
+      const newX = lastPanPos.current.x + dx
+      const newY = lastPanPos.current.y + dy
+      const newTransform = { ...transformRef.current, x: newX, y: newY }
+      transformRef.current = newTransform
+      setTransform(newTransform)
+      dataRef.current?.startLoop?.()
+      return
+    }
+
     const mx = e.clientX - r.left, my = e.clientY - r.top
 
     if (pendingDragRef.current) {
@@ -540,7 +759,48 @@ export default function SiteMap() {
     docMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY })
   }, [docMouseMove])
 
+  // ── Zoom/Pan Handlers ──
+  const handleWheel = useCallback((e) => {
+    e.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+
+    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1
+    const newK = Math.max(0.2, Math.min(3, transformRef.current.k * zoomFactor))
+
+    // Zoom toward mouse position
+    const worldX = (mouseX - transformRef.current.x) / transformRef.current.k
+    const worldY = (mouseY - transformRef.current.y) / transformRef.current.k
+
+    const newX = mouseX - worldX * newK
+    const newY = mouseY - worldY * newK
+
+    const newTransform = { k: newK, x: newX, y: newY }
+    transformRef.current = newTransform
+    setTransform(newTransform)
+    dataRef.current?.startLoop?.()
+  }, [])
+
+  const isPanning = useRef(false)
+  const panStart = useRef({ x: 0, y: 0 })
+  const lastPanPos = useRef({ x: 0, y: 0 })
+
   const handleMouseDown = useCallback((e) => {
+    // Middle mouse button or shift+click for pan
+    if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+      e.preventDefault()
+      isPanning.current = true
+      panStart.current = { x: e.clientX, y: e.clientY }
+      lastPanPos.current = { x: transformRef.current.x, y: transformRef.current.y }
+      if (canvasRef.current) canvasRef.current.style.cursor = 'grabbing'
+      return
+    }
+
+    // Left click for node dragging
     const r = canvasRef.current?.getBoundingClientRect()
     if (!r || !dataRef.current) return
     const mx = e.clientX - r.left, my = e.clientY - r.top
@@ -599,6 +859,134 @@ export default function SiteMap() {
     if (n?.date) navigate(`/post/${n.id}`)
   }, [hovered, navigate])
 
+  const handleDoubleClick = useCallback((e) => {
+    const r = canvasRef.current?.getBoundingClientRect()
+    if (!r || !dataRef.current) return
+    const mx = e.clientX - r.left, my = e.clientY - r.top
+    const n = hitTest(mx, my)
+    if (n) {
+      focusedRef.current = n.id
+      setFocusedNode(n.id)
+      // Auto-zoom to fit the focused node's connected component
+      const connected = new Set()
+      connected.add(n.id)
+      dataRef.current.links.forEach(l => {
+        const s = l.source.id || l.source, t = l.target.id || l.target
+        if (s === n.id) connected.add(t)
+        if (t === n.id) connected.add(s)
+      })
+      const connectedNodes = dataRef.current.nodes.filter(n => connected.has(n.id))
+      if (connectedNodes.length > 1) {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+        connectedNodes.forEach(n => {
+          if (n.x < minX) minX = n.x
+          if (n.x > maxX) maxX = n.x
+          if (n.y < minY) minY = n.y
+          if (n.y > maxY) maxY = n.y
+        })
+        const padding = 60
+        const compW = maxX - minX + padding * 2
+        const compH = maxY - minY + padding * 2
+        const centerX = (minX + maxX) / 2
+        const centerY = (minY + maxY) / 2
+        const scale = Math.min(dims.w / compW, dims.h / compH, 1.5)
+        const newK = scale
+        const newX = dims.w / 2 - centerX * scale
+        const newY = dims.h / 2 - centerY * scale
+        setTransform({ k: newK, x: newX, y: newY })
+      }
+    } else {
+      // Double-click on empty space clears focus
+      focusedRef.current = null
+      setFocusedNode(null)
+    }
+    dataRef.current?.startLoop?.()
+  }, [hitTest, dims])
+
+  const clearFocus = useCallback(() => {
+    focusedRef.current = null
+    setFocusedNode(null)
+    dataRef.current?.startLoop?.()
+  }, [])
+
+  // Fit all nodes to view
+  const fitToView = useCallback(() => {
+    if (!dataRef.current) return
+    const nodes = dataRef.current.nodes
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+    nodes.forEach(n => {
+      if (n.x < minX) minX = n.x
+      if (n.x > maxX) maxX = n.x
+      if (n.y < minY) minY = n.y
+      if (n.y > maxY) maxY = n.y
+    })
+    const padding = 80
+    const graphW = maxX - minX + padding * 2
+    const graphH = maxY - minY + padding * 2
+    const centerX = (minX + maxX) / 2
+    const centerY = (minY + maxY) / 2
+    const scale = Math.min(dims.w / graphW, dims.h / graphH, 1)
+    const newX = dims.w / 2 - centerX * scale
+    const newY = dims.h / 2 - centerY * scale
+    setTransform({ k: scale, x: newX, y: newY })
+    dataRef.current?.startLoop?.()
+  }, [dims])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        clearFocus()
+        if (document.activeElement instanceof HTMLInputElement) {
+          document.activeElement.blur()
+        }
+      }
+      if (e.key === 'f' && !e.ctrlKey && !e.metaKey) {
+        // 'f' key for fit-to-view (not interfering with browser find)
+        fitToView()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [clearFocus, fitToView])
+
+  // Minimap click to navigate
+  const handleMinimapClick = useCallback((e) => {
+    const canvas = minimapRef.current
+    if (!canvas || !dataRef.current) return
+    const rect = canvas.getBoundingClientRect()
+    const mx = e.clientX - rect.left
+    const my = e.clientY - rect.top
+
+    // Get graph bounds
+    const nodes = dataRef.current.nodes
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+    nodes.forEach(n => {
+      if (n.x < minX) minX = n.x
+      if (n.x > maxX) maxX = n.x
+      if (n.y < minY) minY = n.y
+      if (n.y > maxY) maxY = n.y
+    })
+    const padding = 40
+    const graphW = maxX - minX + padding * 2
+    const graphH = maxY - minY + padding * 2
+    const mmCenterX = 90
+    const mmCenterY = 90
+    const graphCenterX = (minX + maxX) / 2
+    const graphCenterY = (minY + maxY) / 2
+    const mmScale = Math.min((180 - 20) / graphW, (180 - 20) / graphH, 1)
+
+    // Convert minimap click to world coordinates
+    const worldX = (mx - mmCenterX) / mmScale + graphCenterX
+    const worldY = (my - mmCenterY) / mmScale + graphCenterY
+
+    // Center view on that world point
+    const newX = dims.w / 2 - worldX * transformRef.current.k
+    const newY = dims.h / 2 - worldY * transformRef.current.k
+    setTransform({ k: transformRef.current.k, x: newX, y: newY })
+    dataRef.current?.startLoop?.()
+  }, [dims])
+
   const toggleCat = useCallback((c) => setCats(p => {
     const n = new Set(p); n.has(c) ? n.delete(c) : n.add(c); return n
   }), [])
@@ -615,6 +1003,36 @@ export default function SiteMap() {
             <h2>site map</h2>
             <p className="sidebar-subtitle">ideas, connections, and the spaces between</p>
           </div>
+
+          {/* Search */}
+          <div className="sidebar-section search-section">
+            <div className="sidebar-label">search nodes</div>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Type to search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* Edge Filters */}
+          <div className="sidebar-section">
+            <div className="sidebar-label">edge types</div>
+            <div className="edge-filter-list">
+              {Object.entries(edgeFilters).map(([type, enabled]) => (
+                <label key={type} className="edge-filter-item">
+                  <input
+                    type="checkbox"
+                    checked={enabled}
+                    onChange={(e) => setEdgeFilters(f => ({ ...f, [type]: e.target.checked }))}
+                  />
+                  <span className="edge-filter-label">{type}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div className="sidebar-section">
             <div className="sidebar-label">filter by theme</div>
             <div className="category-list">
@@ -631,6 +1049,17 @@ export default function SiteMap() {
             <div className="sidebar-label">nodes</div>
             <div className="node-count">{visCount} / {allNodes.length}</div>
           </div>
+          {focusedNode && (
+            <div className="sidebar-section focus-controls">
+              <button className="clear-focus-btn" onClick={clearFocus}>Clear Focus Mode</button>
+            </div>
+          )}
+          <div className="sidebar-section">
+            <div className="sidebar-label">view</div>
+            <button className="toggle-minimap-btn" onClick={() => setShowMinimap(s => !s)}>
+              {showMinimap ? 'Hide Minimap' : 'Show Minimap'}
+            </button>
+          </div>
           {hNode && <div className="sidebar-info">
             <div className="sidebar-label">selected</div>
             <h3 className="info-title">{hNode.label.replace('\n', ' ')}</h3>
@@ -644,12 +1073,33 @@ export default function SiteMap() {
       </aside>
       <div className="sitemap-graph">
         <div className="ascii-bg" ref={bgRef} />
-        <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
-          onMouseDown={handleMouseDown} onMouseMove={handleMove}
+        <canvas
+          ref={canvasRef}
+          style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMove}
           onMouseLeave={handleMouseLeave}
+          onWheel={handleWheel}
           onClick={handleClick}
-          onTouchStart={handleTouchStart} />
-        <div className="sitemap-hint">hover nodes to explore · click posts to read</div>
+          onDoubleClick={handleDoubleClick}
+          onTouchStart={handleTouchStart}
+        />
+        <div className="sitemap-hint">hover nodes to explore · click posts to read · scroll to zoom · shift+drag to pan · double-click for focus</div>
+        <div className="zoom-controls">
+          <button className="zoom-btn" onClick={() => {
+            const newK = Math.min(3, transformRef.current.k * 1.2)
+            setTransform({ ...transformRef.current, k: newK })
+          }} title="Zoom In">+</button>
+          <span className="zoom-level">{Math.round(transform.k * 100)}%</span>
+          <button className="zoom-btn" onClick={() => {
+            const newK = Math.max(0.2, transformRef.current.k * 0.8)
+            setTransform({ ...transformRef.current, k: newK })
+          }} title="Zoom Out">−</button>
+          <button className="zoom-reset" onClick={fitToView} title="Fit to View">⛶</button>
+        </div>
+        {showMinimap && <div className="minimap">
+          <canvas ref={minimapRef} width={180} height={180} title="Minimap (overview)" onClick={handleMinimapClick} />
+        </div>}
       </div>
     </div>
   )
