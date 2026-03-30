@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide, forceX, forceY } from 'd3-force'
 import entries from '../data.json'
-import PreText from 'asciiground'
 
 const COLORS = {
   identity:'#7b9bff', philosophy:'#c08aff', process:'#4ade80', meta:'#f59e0b',
@@ -194,7 +193,6 @@ export default function SiteMap() {
   const themeRef = useRef(getThemeColors())
   const catsRef = useRef(new Set())
   const grainCanvasRef = useRef(null)
-  const bgRef = useRef(null) // PreText background
   const [hovered, setHovered] = useState(null)
   // Track if navigation was triggered by touch to prevent ghost click
   const touchNavRef = useRef(false)
@@ -303,40 +301,6 @@ export default function SiteMap() {
     gctx.fillStyle = th.text
     for (let i = 0; i < 80; i++) gctx.fillRect(Math.random() * 200, Math.random() * 200, 1, 1)
     grainCanvasRef.current = gc
-  }, [])
-
-  // Initialize PreText ASCII background
-  useEffect(() => {
-    const el = bgRef.current
-    if (!el) return
-    // Wait for element to be in DOM, visible, and have non-zero dimensions
-    if (!el.offsetParent || el.clientWidth === 0 || el.clientHeight === 0) {
-      return
-    }
-
-    let bg = null
-    try {
-      bg = new PreText(el, {
-        text: 'Pochiko ',
-        density: 0.03,
-        color: () => themeRef.current.text,
-        fontSize: 16,
-        speed: 0.2,
-        direction: 'diagonal',
-      })
-    } catch (err) {
-      console.warn('PreText initialization failed (SiteMap):', err)
-    }
-
-    return () => {
-      if (bg) {
-        try {
-          bg.destroy()
-        } catch (e) {
-          // ignore
-        }
-      }
-    }
   }, [])
 
   // Sync cats ref
@@ -1198,7 +1162,7 @@ export default function SiteMap() {
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>{collapsed ? '→' : '←'}</button>
       </aside>
       <div className="sitemap-graph">
-        <div className="ascii-bg" ref={bgRef} />
+
         <canvas
           ref={canvasRef}
           style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
