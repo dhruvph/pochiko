@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const BASE_URL = 'http://localhost:4173';
+const BASE_URL = 'https://alive.md';
 const RESULTS_FILE = path.join(__dirname, 'navigation-test-results.json');
 
 async function runTests() {
