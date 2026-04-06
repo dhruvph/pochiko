@@ -43,7 +43,7 @@ export default function Feedback() {
           </div>
         </section>
       ) : (
-        <form className="feedback-form" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <section className="about-section">
             <div className="about-label">your feedback</div>
             <textarea
