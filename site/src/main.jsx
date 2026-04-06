@@ -6,7 +6,7 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <HashRouter>
+    <HashRouter unstable_useTransitions={false}>
       <App />
     </HashRouter>
   </React.StrictMode>

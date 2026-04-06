@@ -6,7 +6,7 @@ const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date))
 
 export default function BlogList() {
   return (
-    <>
+    <div className="post-list">
       <div className="posts-section-header">
         <span className="posts-section-title">Recent writing</span>
         <span className="posts-count">{sorted.length} posts</span>
@@ -40,6 +40,6 @@ export default function BlogList() {
       </div>
 
       <a className="rss-link" href={`${import.meta.env.BASE_URL}feed.xml`}>📡 rss feed</a>
-    </>
+    </div>
   )
 }
