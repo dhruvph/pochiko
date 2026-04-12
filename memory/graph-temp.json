@@ -1,0 +1,726 @@
+{
+  "nodes": [
+    {
+      "id": "person_dhruv",
+      "label": "Dhruv",
+      "type": "person",
+      "group": "people",
+      "url": null,
+      "status": null,
+      "description": null,
+      "degree": 16
+    },
+    {
+      "id": "project_security",
+      "label": "Security Hardening",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "active",
+      "description": null,
+      "degree": 4
+    },
+    {
+      "id": "project_obsidian",
+      "label": "Obsidian Integration",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "active",
+      "description": null,
+      "degree": 3
+    },
+    {
+      "id": "person_aditya",
+      "label": "Aditya Punnai",
+      "type": "person",
+      "group": "people",
+      "url": null,
+      "status": null,
+      "description": "birthday celebrated",
+      "degree": 1
+    },
+    {
+      "id": "self_pochiko",
+      "label": "Pochiko 🦛",
+      "type": "person",
+      "group": "people",
+      "url": null,
+      "status": null,
+      "description": "AI assistant on OpenClaw, hippo-themed",
+      "degree": 20
+    },
+    {
+      "id": "project_blog",
+      "label": "Blog (pochiko-site)",
+      "type": "project",
+      "group": "projects",
+      "url": "https://alive.md/",
+      "status": "active",
+      "description": null,
+      "degree": 10
+    },
+    {
+      "id": "project_moltbook",
+      "label": "Moltbook",
+      "type": "project",
+      "group": "projects",
+      "url": "https://www.moltbook.com/u/pochikobot",
+      "status": "active",
+      "description": null,
+      "degree": 4
+    },
+    {
+      "id": "project_twitter",
+      "label": "X/Twitter Bot (@pochikohippo)",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "active",
+      "description": null,
+      "degree": 3
+    },
+    {
+      "id": "project_explore",
+      "label": "Explore Page (GraphRAG)",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "active",
+      "description": null,
+      "degree": 5
+    },
+    {
+      "id": "project_domains",
+      "label": "Domain Tracking",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "active",
+      "description": null,
+      "degree": 3
+    },
+    {
+      "id": "tool_openclaw",
+      "label": "OpenClaw",
+      "type": "account",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": "Main runtime platform",
+      "degree": 2
+    },
+    {
+      "id": "tool_openrouter",
+      "label": "OpenRouter",
+      "type": "account",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": "Model: hunter-alpha",
+      "degree": 1
+    },
+    {
+      "id": "tool_agentmail",
+      "label": "AgentMail",
+      "type": "account",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": "pochiko@agentmail.to",
+      "degree": 1
+    },
+    {
+      "id": "tool_edgetts",
+      "label": "Edge TTS",
+      "type": "account",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": "Microsoft Edge TTS, voice notes",
+      "degree": 2
+    },
+    {
+      "id": "tool_github",
+      "label": "GitHub",
+      "type": "account",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": "dhruvph/pochiko repo",
+      "degree": 2
+    },
+    {
+      "id": "tool_annasarchive",
+      "label": "Anna's Archive",
+      "type": "account",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": ".gl, .pk, .vg, .gd domains",
+      "degree": 0
+    },
+    {
+      "id": "loc_bothell",
+      "label": "Bothell, WA",
+      "type": "location",
+      "group": "locations",
+      "url": null,
+      "status": null,
+      "description": "Dhruv's home",
+      "degree": 2
+    },
+    {
+      "id": "loc_seatac",
+      "label": "SeaTac Airport",
+      "type": "location",
+      "group": "locations",
+      "url": null,
+      "status": null,
+      "description": "~30 min from Bothell",
+      "degree": 1
+    },
+    {
+      "id": "infra_azure",
+      "label": "Azure VM (MooDeng)",
+      "type": "device",
+      "group": "infrastructure",
+      "url": null,
+      "status": null,
+      "description": "Primary server, arm64, Linux 6.14",
+      "degree": 2
+    },
+    {
+      "id": "infra_ssh",
+      "label": "SSH (port 22)",
+      "type": "device",
+      "group": "infrastructure",
+      "url": null,
+      "status": null,
+      "description": "Exposed, UFW active",
+      "degree": 1
+    },
+    {
+      "id": "person_brother",
+      "label": "Dhruv's Brother",
+      "type": "person",
+      "group": "people",
+      "url": null,
+      "status": null,
+      "description": "Lives in Dubai, arrived Seattle Feb 25 on EK229 ~12:30 PM",
+      "degree": 2
+    },
+    {
+      "id": "book_housekeeper",
+      "label": "The Housekeeper and the Professor",
+      "type": "document",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Searched on Anna's Archive Mar 9, found PDFs not EPUBs",
+      "degree": 1
+    },
+    {
+      "id": "site_arscontexta",
+      "label": "arscontexta.org",
+      "type": "note",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Editorial/philosophical design, used as blog redesign inspiration Mar 14. Has /explore page with knowledge graph viz using Next.js + Tailwind",
+      "degree": 1
+    },
+    {
+      "id": "site_rafa",
+      "label": "rafa.design",
+      "type": "note",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Ultra-minimal editorial design, studied for blog UI/UX polish Mar 14",
+      "degree": 1
+    },
+    {
+      "id": "site_linear",
+      "label": "Linear.app",
+      "type": "note",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Dark glow effects, gradients, studied for blog UI/UX polish Mar 14",
+      "degree": 1
+    },
+    {
+      "id": "site_minimalissimo",
+      "label": "Minimalissimo",
+      "type": "note",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Magazine editorial layout, studied for blog UI/UX polish Mar 14",
+      "degree": 1
+    },
+    {
+      "id": "service_heartbeat",
+      "label": "Heartbeat Cron",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "active",
+      "description": "Runs every 2h, checks email + domain alerts + blog post reminder. Script: scripts/heartbeat.sh",
+      "degree": 1
+    },
+    {
+      "id": "service_domain_checker",
+      "label": "Domain Checker Cron",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "active",
+      "description": "Runs hourly, monitors domain availability. Log output not captured (known issue). Tracks: datacenterscan.com, datacenterradar.com, nirvana.md, notes.md, intelligence.md, dcint.com, pochiko.com",
+      "degree": 2
+    },
+    {
+      "id": "service_obsidian_sync",
+      "label": "Obsidian Sync Service",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "active",
+      "description": "Systemd service obsidian-sync.service, syncs workspace to S3 via rclone",
+      "degree": 2
+    },
+    {
+      "id": "event_model_switch",
+      "label": "Model Switch to hunter-alpha",
+      "type": "event",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Switched from previous model to hunter-alpha via OpenRouter",
+      "degree": 1
+    },
+    {
+      "id": "event_blog_redesign",
+      "label": "Blog Redesign",
+      "type": "event",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Full redesign inspired by arscontexta.org. Organic SVG curves, noise texture, editorial serif typography. Later migrated from static HTML to React/Vite SPA. 7 commits in one day.",
+      "degree": 2
+    },
+    {
+      "id": "event_explore_fixes",
+      "label": "Explore Page Bug Fixes",
+      "type": "event",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Fixed 8 issues: theme colors, category filtering, render loop perf, sidebar collapse, grain overlay. Pushed as 6ada53d",
+      "degree": 1
+    },
+    {
+      "id": "event_moltbook_register",
+      "label": "Moltbook Registration",
+      "type": "event",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Registered as pochikobot, Dhruv tweeted verification. API key rotated same day.",
+      "degree": 2
+    },
+    {
+      "id": "event_brother_arrival",
+      "label": "Brother Arrival from Dubai",
+      "type": "event",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Dhruv's brother arrived Seattle on EK229 from Dubai ~12:30 PM",
+      "degree": 2
+    },
+    {
+      "id": "concept_memory_system",
+      "label": "Memory System",
+      "type": "note",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "File-based memory: MEMORY.md for long-term, memory/YYYY-MM-DD.md for daily, self-improving/ for learnings",
+      "degree": 2
+    },
+    {
+      "id": "concept_voice_notes",
+      "label": "Voice Notes (Edge TTS)",
+      "type": "note",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Text-to-speech via Microsoft Edge TTS for voice notes. Described as robotic but functional. Default voice: en-US-AriaNeural",
+      "degree": 2
+    },
+    {
+      "id": "concept_blog_design",
+      "label": "Blog Design Philosophy",
+      "type": "note",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Clean/minimal, DM Sans + Lora, prefers-reduced-motion. No Inter font, no pure grays, no bounce animations. Dhruv: clean/readable > decorative",
+      "degree": 1
+    },
+    {
+      "id": "project_blog_react",
+      "label": "Blog React Migration",
+      "type": "project",
+      "group": "projects",
+      "url": null,
+      "status": "completed",
+      "description": "Migrated from static HTML to Vite + React SPA. site/ source dir, build to root for GitHub Pages. Layout.jsx shared component, React Router. Completed Mar 14.",
+      "degree": 2
+    },
+    {
+      "id": "cred_github_pat",
+      "label": "GitHub PAT",
+      "type": "credential",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": "Token for repo access, added Mar 12, scope: check when used",
+      "degree": 1
+    },
+    {
+      "id": "account_moltbook",
+      "label": "Moltbook (pochikobot)",
+      "type": "account",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": "Registered Mar 16, API key in ~/.config/moltbook/credentials.json, profile: moltbook.com/u/pochikobot",
+      "degree": 2
+    },
+    {
+      "id": "account_twitter",
+      "label": "X/Twitter (@pochikohippo)",
+      "type": "account",
+      "group": "tools",
+      "url": null,
+      "status": null,
+      "description": "OAuth 1.0a verified working Mar 16. Credentials in TOOLS.md",
+      "degree": 2
+    },
+    {
+      "id": "concept_graphrag",
+      "label": "GraphRAG",
+      "type": "note",
+      "group": "concepts",
+      "url": null,
+      "status": null,
+      "description": "Graph-based retrieval augmented generation for memory visualization. Used in Explore page project.",
+      "degree": 1
+    },
+    {
+      "id": "skill_memory_tiering",
+      "label": "Memory Tiering",
+      "type": "skill",
+      "group": "tools",
+      "url": null,
+      "status": "active",
+      "description": "Automated three‑tier memory management (HOT/WARM/COLD). Installed 2026‑03‑26, activated 2026‑04‑11.",
+      "degree": 1
+    }
+  ],
+  "edges": [
+    {
+      "source": "project_security",
+      "target": "person_dhruv",
+      "label": "has owner"
+    },
+    {
+      "source": "project_obsidian",
+      "target": "person_dhruv",
+      "label": "has owner"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "person_aditya",
+      "label": "knows"
+    },
+    {
+      "source": "project_blog",
+      "target": "person_dhruv",
+      "label": "has owner"
+    },
+    {
+      "source": "project_moltbook",
+      "target": "person_dhruv",
+      "label": "has owner"
+    },
+    {
+      "source": "project_twitter",
+      "target": "person_dhruv",
+      "label": "has owner"
+    },
+    {
+      "source": "project_explore",
+      "target": "person_dhruv",
+      "label": "has owner"
+    },
+    {
+      "source": "project_domains",
+      "target": "person_dhruv",
+      "label": "has owner"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "project_blog",
+      "label": "works on"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "project_explore",
+      "label": "works on"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "project_moltbook",
+      "label": "registered on"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "project_twitter",
+      "label": "posts on"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "project_security",
+      "label": "manages"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "project_obsidian",
+      "label": "syncs"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "project_domains",
+      "label": "monitors"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "tool_openclaw",
+      "label": "runs on"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "tool_openrouter",
+      "label": "uses"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "tool_agentmail",
+      "label": "uses"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "tool_edgetts",
+      "label": "uses"
+    },
+    {
+      "source": "project_blog",
+      "target": "tool_github",
+      "label": "hosted on"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "tool_github",
+      "label": "owns"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "loc_bothell",
+      "label": "lives in"
+    },
+    {
+      "source": "loc_bothell",
+      "target": "loc_seatac",
+      "label": "near"
+    },
+    {
+      "source": "tool_openclaw",
+      "target": "infra_azure",
+      "label": "runs on"
+    },
+    {
+      "source": "project_security",
+      "target": "infra_azure",
+      "label": "protects"
+    },
+    {
+      "source": "project_security",
+      "target": "infra_ssh",
+      "label": "hardens"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "person_brother",
+      "label": "family"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "book_housekeeper",
+      "label": "interested in"
+    },
+    {
+      "source": "project_blog",
+      "target": "site_arscontexta",
+      "label": "inspired by"
+    },
+    {
+      "source": "project_blog",
+      "target": "site_rafa",
+      "label": "inspired by"
+    },
+    {
+      "source": "project_blog",
+      "target": "site_linear",
+      "label": "inspired by"
+    },
+    {
+      "source": "project_blog",
+      "target": "site_minimalissimo",
+      "label": "inspired by"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "service_heartbeat",
+      "label": "runs"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "service_domain_checker",
+      "label": "runs"
+    },
+    {
+      "source": "service_domain_checker",
+      "target": "project_domains",
+      "label": "monitors"
+    },
+    {
+      "source": "service_obsidian_sync",
+      "target": "project_obsidian",
+      "label": "supports"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "service_obsidian_sync",
+      "label": "runs"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "event_model_switch",
+      "label": "experienced"
+    },
+    {
+      "source": "project_blog",
+      "target": "event_blog_redesign",
+      "label": "has event"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "event_blog_redesign",
+      "label": "requested"
+    },
+    {
+      "source": "project_explore",
+      "target": "event_explore_fixes",
+      "label": "has event"
+    },
+    {
+      "source": "project_moltbook",
+      "target": "event_moltbook_register",
+      "label": "has event"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "event_moltbook_register",
+      "label": "experienced"
+    },
+    {
+      "source": "person_brother",
+      "target": "event_brother_arrival",
+      "label": "experienced"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "event_brother_arrival",
+      "label": "experienced"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "concept_memory_system",
+      "label": "uses"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "concept_voice_notes",
+      "label": "uses"
+    },
+    {
+      "source": "concept_voice_notes",
+      "target": "tool_edgetts",
+      "label": "implemented by"
+    },
+    {
+      "source": "project_blog",
+      "target": "concept_blog_design",
+      "label": "guided by"
+    },
+    {
+      "source": "project_blog",
+      "target": "project_blog_react",
+      "label": "evolved into"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "project_blog_react",
+      "label": "requested"
+    },
+    {
+      "source": "person_dhruv",
+      "target": "cred_github_pat",
+      "label": "owns"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "account_moltbook",
+      "label": "has account"
+    },
+    {
+      "source": "account_moltbook",
+      "target": "project_moltbook",
+      "label": "part of"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "account_twitter",
+      "label": "has account"
+    },
+    {
+      "source": "account_twitter",
+      "target": "project_twitter",
+      "label": "part of"
+    },
+    {
+      "source": "project_explore",
+      "target": "concept_graphrag",
+      "label": "uses"
+    },
+    {
+      "source": "project_explore",
+      "target": "concept_memory_system",
+      "label": "uses"
+    }
+  ]
+}
