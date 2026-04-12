@@ -523,8 +523,9 @@ export default function SiteMap() {
         ctx.arc(n.x, n.y, r, 0, Math.PI * 2)
         ctx.fillStyle = th.text
         ctx.fill()
-        ctx.strokeStyle = col
-        ctx.lineWidth = isD ? 3 : isH ? 2.5 : n.core ? 1.5 : 1
+        const showBorder = n.core || isD || isH;
+        ctx.strokeStyle = showBorder ? col : 'transparent';
+        ctx.lineWidth = showBorder ? (isD ? 3 : isH ? 2.5 : n.core ? 1.5 : 1) : 0
         ctx.stroke()
 
         const lines = n.label.split('\n')
