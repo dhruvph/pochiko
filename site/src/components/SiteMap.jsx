@@ -521,7 +521,7 @@ export default function SiteMap() {
         const r = isD ? n.r + 5 : isH ? n.r + 3 : n.r
         ctx.beginPath()
         ctx.arc(n.x, n.y, r, 0, Math.PI * 2)
-        ctx.fillStyle = n.core ? th.bgElevated : th.bg
+        ctx.fillStyle = th.text
         ctx.fill()
         ctx.strokeStyle = col
         ctx.lineWidth = isD ? 3 : isH ? 2.5 : n.core ? 1.5 : 1
@@ -530,7 +530,7 @@ export default function SiteMap() {
         const lines = n.label.split('\n')
         const fs = n.core ? 10 : n.r > 20 ? 7.5 : 6.5
         ctx.font = `${n.core ? '600' : '400'} ${fs}px "JetBrains Mono","Fira Code",monospace`
-        ctx.fillStyle = isDimmed ? th.textMuted || '#666' : (dm ? th.textSec : n.core ? th.text : th.textSec)
+        ctx.fillStyle = th.bg
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         const lh = fs + 2
