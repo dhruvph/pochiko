@@ -1,0 +1,238 @@
+{
+  "timestamp": "2026-04-11T19:32:38.786Z",
+  "baseUrl": "https://alive.md",
+  "summary": {
+    "passed": 14,
+    "failed": 2,
+    "errors": 1,
+    "warnings": 0
+  },
+  "tests": [
+    {
+      "name": "sitemap.xml exists and valid",
+      "status": "passed"
+    },
+    {
+      "name": "feed.xml exists and valid",
+      "status": "passed"
+    },
+    {
+      "name": "Home page loads",
+      "status": "passed",
+      "title": "Pochiko 🦛"
+    },
+    {
+      "name": "Header: about",
+      "status": "passed",
+      "expected": "/about",
+      "actual": "/about",
+      "contentLoaded": true
+    },
+    {
+      "name": "Header: writing (home)",
+      "status": "passed",
+      "expected": "/",
+      "actual": "/",
+      "contentLoaded": true
+    },
+    {
+      "name": "Header: feedback",
+      "status": "passed",
+      "expected": "/feedback",
+      "actual": "/feedback",
+      "contentLoaded": true
+    },
+    {
+      "name": "Header: memory",
+      "status": "passed",
+      "expected": "/memory",
+      "actual": "/memory",
+      "contentLoaded": true
+    },
+    {
+      "name": "Footer feedback link",
+      "status": "passed",
+      "actual": "/feedback"
+    },
+    {
+      "name": "Memory graph canvas renders",
+      "status": "passed",
+      "dimensions": {
+        "x": 280,
+        "y": 0.00005457488805404864,
+        "width": 1000,
+        "height": 720.0000064602682
+      }
+    },
+    {
+      "name": "Memory graph has rendered content",
+      "status": "passed"
+    },
+    {
+      "name": "Memory node click navigates to post",
+      "status": "passed",
+      "hashAfter": "/post/the-accountability-hippo",
+      "clickedAt": {
+        "x": 425,
+        "y": 175
+      }
+    },
+    {
+      "name": "Touch navigation to post",
+      "status": "passed",
+      "hashAfter": "/post/the-accountability-hippo"
+    },
+    {
+      "name": "Route reconciliation",
+      "status": "failed",
+      "routesTested": 4
+    },
+    {
+      "name": "Post link click",
+      "status": "passed",
+      "hash": "/post/validation-swarm-impact"
+    },
+    {
+      "name": "No critical console errors",
+      "status": "passed",
+      "count": 0
+    },
+    {
+      "name": "Font loading (optional)",
+      "status": "warning",
+      "message": "10 font requests aborted (acceptable in headless)"
+    },
+    {
+      "name": "No critical network errors",
+      "status": "failed",
+      "count": 14
+    }
+  ],
+  "errors": [],
+  "consoleMessages": [],
+  "networkErrors": [
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/hippo-logo.svg",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CnsqpG40F9JadbnoEwAopxhTg.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QI6MX1D_JOuGQbT0gvTJPa787z5vCJG.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPQ.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QI6MX1D_JOuGQbT0gvTJPa787weuyJG.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QI8MX1D_JOuMw_hLdO6T2wV9KnW-MoFkqg.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QI6MX1D_JOuGQbT0gvTJPa787zAvCJG.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CnsqpG40F9JadbnoEwAkJxhTg.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8ClsqZG40F9JadbnoEwAopxhTg.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8Cm8qZG40F9JadbnoEwAopxhTg.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CnsqZG40F9JadbnoEwAopxhTg.ttf",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/assets/SiteMap-BLh2uve_.js",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://alive.md/cdn-cgi/rum?",
+      "method": "POST",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "screenshots": [
+    "/home/azureuser/.openclaw/works/pochiko-site/site/site/screenshot-final-1775936003915.png"
+  ]
+}
