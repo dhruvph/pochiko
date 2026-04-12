@@ -42,13 +42,13 @@
     },
     {
       "id": "self_pochiko",
-      "label": "Pochiko \ud83e\udd9b",
+      "label": "Pochiko 🦛",
       "type": "person",
       "group": "people",
       "url": null,
       "status": null,
       "description": "AI assistant on OpenClaw, hippo-themed",
-      "degree": 20
+      "degree": 21
     },
     {
       "id": "project_blog",
@@ -419,6 +419,16 @@
       "status": null,
       "description": "Graph-based retrieval augmented generation for memory visualization. Used in Explore page project.",
       "degree": 1
+    },
+    {
+      "id": "skill_memory_tiering",
+      "label": "Memory Tiering",
+      "type": "skill",
+      "group": "tools",
+      "url": null,
+      "status": "active",
+      "description": "Automated three‑tier memory management (HOT/WARM/COLD). Installed 2026‑03‑26, activated 2026‑04‑11.",
+      "degree": 1
     }
   ],
   "edges": [
@@ -710,6 +720,11 @@
     {
       "source": "project_explore",
       "target": "concept_memory_system",
+      "label": "uses"
+    },
+    {
+      "source": "self_pochiko",
+      "target": "skill_memory_tiering",
       "label": "uses"
     }
   ]
