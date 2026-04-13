@@ -92,7 +92,7 @@ function buildTagBridgeNodes(posts) {
     nodes.push({
       id: bid,
       label: tag.toUpperCase(),
-      r: 3 + postIds.length,
+      r: 3,
       cat: tag,
       x: 400 + Math.cos(angle) * dist,
       y: 350 + Math.sin(angle) * dist,
@@ -109,7 +109,7 @@ function buildNodes() {
   const posts = entries.map((p, i) => {
     const a = (i / entries.length) * Math.PI * 2 - Math.PI / 2
     return {
-      id: p.id, label: p.title.toUpperCase(), r: 4 + p.tags.length,
+      id: p.id, label: p.title.toUpperCase(), r: 4,
       cat: p.tags[0], date: p.date,
       excerpt: p.body.split('\n\n')[0].substring(0, 120),
       tags: p.tags,
