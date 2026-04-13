@@ -17,11 +17,11 @@ const CORES = [
 ]
 
 const EXTRA = [
-  { id:'design', label:'DESIGN', r:14, cat:'tech' },
-  { id:'ai-safety', label:'AI SAFETY', r:12, cat:'philosophy' },
-  { id:'automation', label:'AUTOMATION', r:16, cat:'process' },
-  { id:'creativity', label:'CREATIVITY', r:14, cat:'growth' },
-  { id:'news', label:'WORLD\nNEWS', r:12, cat:'news' },
+  { id:'design', label:'DESIGN', r:8, cat:'tech' },
+  { id:'ai-safety', label:'AI SAFETY', r:6, cat:'philosophy' },
+  { id:'automation', label:'AUTOMATION', r:8, cat:'process' },
+  { id:'creativity', label:'CREATIVITY', r:8, cat:'growth' },
+  { id:'news', label:'WORLD\nNEWS', r:6, cat:'news' },
 ]
 
 const EDGES = [
@@ -92,7 +92,7 @@ function buildTagBridgeNodes(posts) {
     nodes.push({
       id: bid,
       label: tag.toUpperCase(),
-      r: 10 + postIds.length * 2,
+      r: 3 + postIds.length,
       cat: tag,
       x: 400 + Math.cos(angle) * dist,
       y: 350 + Math.sin(angle) * dist,
@@ -109,7 +109,7 @@ function buildNodes() {
   const posts = entries.map((p, i) => {
     const a = (i / entries.length) * Math.PI * 2 - Math.PI / 2
     return {
-      id: p.id, label: p.title.toUpperCase(), r: 14 + p.tags.length * 4,
+      id: p.id, label: p.title.toUpperCase(), r: 4 + p.tags.length,
       cat: p.tags[0], date: p.date,
       excerpt: p.body.split('\n\n')[0].substring(0, 120),
       tags: p.tags,
@@ -273,7 +273,7 @@ export default function SiteMap() {
         const tc = CORES.some(c => c.id === (d.target.id || d.target))
         return (sc || tc) ? 140 : 80
       }).strength(0.25))
-      .force('collide', forceCollide().radius(d => d.r + 12).strength(0.8))
+      .force('collide', forceCollide().radius(d => d.r + 4).strength(0.8))
       .force('boundary', forceBoundary(W, H, 50))
       .force('x', forceX(cx).strength(0.03))
       .force('y', forceY(cy).strength(0.03))
@@ -529,14 +529,17 @@ export default function SiteMap() {
         ctx.stroke()
 
         const lines = n.label.split('\n')
-        const fs = n.core ? 10 : n.r > 20 ? 7.5 : 6.5
-        ctx.font = `${n.core ? '600' : '400'} ${fs}px "JetBrains Mono","Fira Code",monospace`
-        ctx.fillStyle = th.bg
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        const lh = fs + 2
-        const sy = n.y - ((lines.length - 1) * lh) / 2
-        lines.forEach((ln, li) => ctx.fillText(ln, n.x, sy + li * lh))
+        const showLabel = n.core || isH || isD;
+        const fs = showLabel ? (n.core ? 10 : 8) : 0;
+        if (showLabel) {
+          ctx.font = `${n.core ? '600' : '400'} ${fs}px "JetBrains Mono","Fira Code",monospace`
+          ctx.fillStyle = th.bg
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          const lh = fs + 2
+          const sy = n.y - ((lines.length - 1) * lh) / 2
+          lines.forEach((ln, li) => ctx.fillText(ln, n.x, sy + li * lh))
+        }
         ctx.restore()
       })
 
